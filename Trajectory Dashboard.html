@@ -1,0 +1,3324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>MT-TPI Trajectory Dashboard</title>
+<meta name="viewport" content="width=1440" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000000;
+    --bg-2: #000000;
+    --panel: #0f1117;
+    --panel-2: #161922;
+    --line: #1c2030;
+    --line-2: #262b3d;
+    --ink: #e6e8ef;
+    --ink-2: #a8aebd;
+    --ink-3: #6b7180;
+    --teal: #facc15;
+    --teal-dim: rgba(250,204,21,0.18);
+    --purple: #facc15;
+    --purple-dim: rgba(250,204,21,0.18);
+    --amber: #facc15;
+    --amber-dim: rgba(250,204,21,0.18);
+    --accent: #facc15;
+    --good: oklch(0.78 0.14 155);
+    --warn: oklch(0.78 0.16 35);
+    --grid: rgba(255,255,255,0.04);
+    --grid-strong: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-feature-settings: "tnum" on; }
+
+  /* Smooth theme transitions on surfaces, text, borders, and shadows.
+     Excludes transform/opacity so interactive states (hover, click) stay snappy. */
+  body, .header, .sidebar, .panel, .panel-head, .panel-axes,
+  .stat, .pb-btn, .select, .chip, .load-test-btn, .theme-toggle,
+  details.section, summary, .scrubber, .scrubber-fill, .scrubber-thumb,
+  .metrics-bar, .metrics-bar > i, .metrics-table th, .metrics-table td,
+  .legend, .legend-eye, .live-pill, .live-tag, .panel-collapse,
+  .window-display, .footer-stat, .footer-stat .lbl, .footer-stat .val,
+  .panel-title, .panel-title .accent, .panel-meta,
+  .section-body, .section-label, .stat-meta, .stat-label, .stat-value, .stat .dot {
+    transition:
+      background-color 0.45s ease,
+      color 0.45s ease,
+      border-color 0.45s ease,
+      box-shadow 0.45s ease,
+      fill 0.45s ease,
+      stroke 0.45s ease;
+  }
+  .panel-canvas { transition: opacity 0.25s ease; }
+
+  /* ===== Light theme ===== */
+  body.light {
+    --bg: #f5f5f4;
+    --bg-2: #fafaf9;
+    --panel: #ffffff;
+    --panel-2: #fafaf9;
+    --line: #e7e5e4;
+    --line-2: #d6d3d1;
+    --ink: #18181b;
+    --ink-2: #52525b;
+    --ink-3: #a1a1aa;
+    --grid: rgba(0,0,0,0.05);
+    --grid-strong: rgba(0,0,0,0.10);
+    --legend-bg: rgba(255,255,255,0.92);
+    --accent: #1d4ed8;
+    --teal: #1d4ed8;
+    --teal-dim: rgba(29,78,216,0.12);
+    --purple: #1d4ed8;
+    --amber: #1d4ed8;
+  }
+  body.light .panel {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03);
+  }
+  body.light .panel:hover {
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 1px var(--accent),
+      0 0 24px rgba(29,78,216,0.22),
+      0 8px 24px rgba(29,78,216,0.10);
+  }
+  body.light .stat {
+    background: #ffffff;
+  }
+  body.light .scrubber-thumb { box-shadow: 0 0 0 3px var(--bg); }
+  body.light .header {
+    background: linear-gradient(180deg, rgba(0,0,0,0.015), transparent);
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink-2);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    margin-left: 6px;
+    flex: none;
+  }
+  .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .theme-toggle svg { width: 16px; height: 16px; }
+  .theme-toggle .icon-sun { display: none; }
+  body.light .theme-toggle .icon-sun  { display: block; }
+  body.light .theme-toggle .icon-moon { display: none; }
+  /* mode toggle icons — mirror sun/moon swap behaviour */
+  #viewModeToggle .icon-multi { display: none; }
+  body.multi #viewModeToggle .icon-multi  { display: block; }
+  body.multi #viewModeToggle .icon-single { display: none; }
+  body.multi #viewModeToggle { color: var(--accent); border-color: var(--accent); }
+  .view-mode-toggle {
+    width: 102px;
+    padding: 0 12px;
+    gap: 8px;
+    border-radius: 999px;
+    justify-content: center;
+  }
+  .view-mode-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    line-height: 1;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  .view-mode-label::before { content: 'SINGLE'; }
+  body.multi .view-mode-label::before { content: 'MULTI'; }
+
+  /* Multi-test slot cards */
+  .slot-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px 12px;
+    margin-top: 10px;
+    position: relative;
+    background: var(--bg-2);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .slot-card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--slot-color, var(--accent));
+  }
+  .slot-card:hover {
+    border-color: var(--slot-color, var(--accent));
+    box-shadow: 0 0 0 1px var(--slot-color, var(--accent));
+  }
+  .slot-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+    padding-left: 8px;
+  }
+  .slot-title {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .slot-color-chip {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    background: var(--slot-color, var(--accent));
+    box-shadow: 0 0 8px var(--slot-color, var(--accent));
+  }
+  .slot-body { display: flex; flex-direction: column; gap: 8px; padding-left: 8px; }
+  .slot-body .section-label { margin: 0 0 4px 0; font-size: 10px; }
+  .slot-baseline-note {
+    padding: 8px 10px;
+    background: var(--bg-2);
+    border: 1px dashed var(--line-2);
+    border-radius: 6px;
+    color: var(--ink-3);
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  /* Per-test live-metrics groups */
+  .metric-group {
+    margin-top: 10px;
+  }
+  .metric-group:first-of-type { margin-top: 0; }
+  .metric-group-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .metric-group-chip {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+    background: var(--mg-color, var(--accent));
+    box-shadow: 0 0 8px var(--mg-color, var(--accent));
+    flex: none;
+  }
+  .metric-group-label-name {
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-weight: 400;
+    font-size: 10px;
+  }
+  .test-info-group {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .test-info-group:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .test-info-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+
+  /* ===== App shell ===== */
+  .app {
+    display: grid;
+    grid-template-rows: 64px 1fr;
+    height: 100vh;
+    min-height: 760px;
+  }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 22px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+    gap: 24px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 7px;
+    background:
+      conic-gradient(from 220deg, var(--teal), var(--purple), var(--amber), var(--teal));
+    position: relative; flex: none;
+    box-shadow: 0 0 24px oklch(0.74 0.16 300 / 0.35);
+  }
+  .brand-mark::after {
+    content: ""; position: absolute; inset: 4px;
+    background: var(--bg); border-radius: 4px;
+  }
+  .brand-mark::before {
+    content: ""; position: absolute; inset: 9px;
+    background: var(--ink); border-radius: 50%;
+    box-shadow: 0 0 8px var(--ink);
+  }
+  .brand h1 {
+    font-size: 14px; font-weight: 600; letter-spacing: 0.01em;
+    margin: 0;
+  }
+  .brand .sub {
+    color: var(--ink-3);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .brand-stack { display: flex; flex-direction: column; }
+
+  .stats { display: flex; gap: 10px; align-items: center; }
+  .stat {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 14px 8px 12px;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border-radius: 999px;
+    min-width: 132px;
+  }
+  .stat .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal);
+    box-shadow: 0 0 10px var(--teal);
+    flex: none;
+  }
+  .stat.purple .dot { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+  .stat.amber  .dot { background: var(--amber);  box-shadow: 0 0 10px var(--amber); }
+  .stat.good   .dot { background: var(--good);   box-shadow: 0 0 10px var(--good); }
+  .stat-meta { display: flex; flex-direction: column; line-height: 1.1; }
+  .stat-label { font-size: 10px; color: var(--ink-3); letter-spacing: 0.14em; text-transform: uppercase; }
+  .stat-value { font-size: 14px; font-weight: 600; margin-top: 3px; }
+
+  .header-tools { display: flex; align-items: center; gap: 10px; color: var(--ink-3); font-size: 11px; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 10px;
+    border: 1px solid oklch(0.78 0.14 155 / 0.4);
+    border-radius: 999px;
+    color: var(--good);
+    background: oklch(0.78 0.14 155 / 0.08);
+    font-size: 11px; letter-spacing: 0.06em;
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--good);
+    box-shadow: 0 0 8px var(--good);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* ===== Body ===== */
+  .body {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 0;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    border-right: 1px solid var(--line);
+    background: var(--bg-2);
+    overflow-y: auto;
+    padding: 14px 14px 24px;
+  }
+  .sidebar::-webkit-scrollbar { width: 6px; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 3px; }
+
+  details.section {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  details.section[open] { background: var(--panel); }
+  details.section > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 11px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    user-select: none;
+  }
+  details.section > summary::-webkit-details-marker { display: none; }
+  details.section > summary .chev {
+    transition: transform 0.2s ease;
+    color: var(--ink-3);
+    font-size: 10px;
+  }
+  details.section[open] > summary .chev { transform: rotate(90deg); }
+  .section-body { padding: 4px 14px 14px; }
+  .section-label {
+    font-size: 11px; color: var(--ink-3); margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* Select */
+  .select {
+    width: 100%;
+    appearance: none;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 9px 30px 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--ink-3) 50%),
+      linear-gradient(135deg, var(--ink-3) 50%, transparent 50%);
+    background-position: right 14px top 16px, right 9px top 16px;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .select:hover { border-color: var(--line-2); }
+  .select:focus { outline: none; border-color: var(--teal); }
+
+  .pattern-chips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
+  .chip {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .chip:hover { border-color: var(--line-2); color: var(--ink); }
+  .chip.active {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  /* Slider */
+  .slider-row { display: flex; gap: 10px; align-items: center; margin-top: 6px; }
+  .slider {
+    flex: 1;
+    -webkit-appearance: none; appearance: none;
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 4px var(--teal-dim);
+  }
+  .slider::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer; border: none;
+    box-shadow: 0 0 0 4px var(--teal-dim);
+  }
+  .ticks {
+    position: relative;
+    height: 14px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--ink-3);
+    font-family: "JetBrains Mono", monospace;
+  }
+  .ticks > span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .window-display {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--teal);
+    min-width: 38px; text-align: center;
+  }
+
+  /* Playback */
+  .playback-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+  .pb-btn {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    border-radius: 6px;
+    padding: 9px 0;
+    font-size: 11px; font-family: inherit;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+  }
+  .pb-btn:hover { color: var(--ink); border-color: var(--line-2); }
+  .pb-btn.primary {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+  .pb-btn svg { width: 10px; height: 10px; }
+
+  .scrubber-wrap { margin-top: 4px; }
+  .scrubber {
+    width: 100%;
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .scrubber-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    background: var(--accent);
+    border-radius: 3px;
+    width: 35%;
+  }
+  .scrubber-thumb {
+    position: absolute; top: 50%;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+    left: 35%;
+    box-shadow: 0 0 0 3px var(--bg-2);
+  }
+  .scrubber-time {
+    display: flex; justify-content: space-between;
+    margin-top: 7px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+  }
+
+  /* Metrics table */
+  .metrics-table { width: 100%; border-collapse: collapse; }
+  .metrics-table th, .metrics-table td {
+    text-align: left;
+    font-size: 11px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .metrics-table th {
+    color: var(--ink-3);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .metrics-table tr:last-child td { border-bottom: none; }
+  .metrics-table .cls {
+    font-family: "JetBrains Mono", monospace;
+    color: var(--ink);
+    font-size: 11px;
+  }
+  .metrics-table .val {
+    text-align: right;
+    font-family: "JetBrains Mono", monospace;
+    color: var(--ink);
+  }
+  .metrics-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .metrics-bar > i {
+    display: block; height: 100%;
+    border-radius: 2px;
+  }
+
+  /* ===== Main ===== */
+  main {
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+    min-height: 0;
+    min-width: 0;
+  }
+  .panel {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.015), transparent 30%),
+      var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 0; min-height: 0;
+  }
+  .panel:hover {
+    border-color: var(--accent);
+    box-shadow:
+      0 0 0 1px var(--accent),
+      0 0 24px rgba(250,204,21,0.18),
+      0 8px 40px rgba(250,204,21,0.08);
+  }
+
+  /* Sidebar section hover: same accent treatment as panels */
+  details.section:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(250,204,21,0.12);
+  }
+  body.light details.section:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(29,78,216,0.14);
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .panel-title .accent {
+    width: 4px; height: 14px;
+    border-radius: 2px;
+    background: var(--teal);
+  }
+  .panel.purple .panel-title .accent { background: var(--purple); }
+  .panel.amber  .panel-title .accent { background: var(--amber); }
+  .panel-meta {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--ink-3);
+    font-size: 11px;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .panel-body {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
+  .panel-canvas { display: block; width: 100%; height: 100%; }
+
+  .legend {
+    position: absolute;
+    top: 12px; right: 14px;
+  }
+  .legend.left-stack {
+    right: auto; left: 14px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 8px 10px;
+    display: flex; gap: 12px;
+    background: var(--legend-bg, rgba(15,17,23,0.8));
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 10px;
+    backdrop-filter: blur(8px);
+    z-index: 2;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: var(--ink-2); font-family: "JetBrains Mono", monospace; }
+  .legend-swatch { width: 10px; height: 2px; border-radius: 1px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .legend-eye {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    width: 22px; height: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0;
+    transition: all 0.15s;
+  }
+  .legend-eye:hover { color: var(--ink); border-color: var(--line-2); }
+  .legend-eye.off { color: var(--ink-3); background: rgba(255,255,255,0.02); }
+  .legend-eye svg { width: 12px; height: 12px; }
+  .legend-row.muted .legend-item { opacity: 0.4; }
+  .legend-row.muted .legend-swatch { background: var(--ink-3) !important; box-shadow: none !important; }
+
+  .panel-footer-stats {
+    position: absolute;
+    bottom: 12px; left: 16px;
+    display: flex; gap: 16px;
+    z-index: 2;
+    font-size: 10px;
+    font-family: "JetBrains Mono", monospace;
+  }
+  .footer-stat { display: flex; flex-direction: column; gap: 2px; }
+  .footer-stat .lbl { color: var(--ink-3); letter-spacing: 0.1em; text-transform: uppercase; font-size: 9px; }
+  .footer-stat .val { color: var(--ink); font-size: 12px; }
+
+  .live-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid oklch(0.78 0.14 155 / 0.35);
+    background: oklch(0.78 0.14 155 / 0.08);
+    color: var(--good);
+    border-radius: 999px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .live-tag .ldot { width: 5px; height: 5px; border-radius: 50%; background: var(--good); box-shadow: 0 0 6px var(--good); animation: pulse 1.6s ease-in-out infinite; }
+
+  .load-test-btn {
+    margin-top: 14px;
+    width: 100%;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--teal);
+    background: linear-gradient(180deg, rgba(250,204,21,0.22), rgba(250,204,21,0.10));
+    color: var(--teal);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .load-test-btn:hover {
+    background: linear-gradient(180deg, rgba(250,204,21,0.32), rgba(250,204,21,0.16));
+    box-shadow: 0 0 18px rgba(250,204,21,0.25);
+    color: #fde68a;
+  }
+  .load-test-btn:active { transform: translateY(1px); }
+  .load-test-btn.loading {
+    border-color: var(--amber);
+    color: var(--amber);
+    background: linear-gradient(180deg, oklch(0.84 0.14 75 / 0.22), oklch(0.84 0.14 75 / 0.10));
+  }
+  .load-test-btn.done {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--teal-dim);
+  }
+  .load-test-btn svg { width: 12px; height: 12px; }
+
+  /* Expanded panel */
+  main.has-expanded > .panel:not(.expanded) { display: none; }
+  .panel.expanded {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    cursor: default;
+  }
+  .panel { cursor: zoom-in; }
+  .panel.expanded { cursor: default; }
+  .panel-collapse {
+    position: absolute;
+    top: 10px; right: 12px;
+    z-index: 5;
+    display: none;
+    align-items: center; gap: 6px;
+    padding: 6px 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    color: var(--ink-2);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .panel-collapse:hover { color: var(--ink); border-color: var(--teal); }
+  .panel-collapse svg { width: 11px; height: 11px; }
+  .panel.expanded .panel-collapse { display: inline-flex; }
+  .panel.expanded .panel-meta { margin-right: 110px; }
+
+  /* Axes strip beneath the 3D plots */
+  .panel-axes {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 14px;
+    border-top: 1px solid var(--line);
+    background: rgba(255,255,255,0.015);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+    flex: none;
+  }
+  .panel-axes .axis-key {
+    color: var(--ink);
+    font-weight: 700;
+    margin-right: 6px;
+    letter-spacing: 0;
+  }
+
+  /* SR-only utility */
+  .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-stack">
+        <h1>MT-TPI Trajectory Dashboard</h1>
+        <div class="sub">UAV · Real-Time Forecast Monitor</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <button class="theme-toggle view-mode-toggle" id="viewModeToggle" title="Toggle single · multi-test compare" aria-label="Toggle view mode">
+        <svg class="icon-single" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+        <svg class="icon-multi"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg>
+        <span class="view-mode-label"></span>
+      </button>
+      <button class="theme-toggle" id="themeToggle" title="Toggle light · dark theme" aria-label="Toggle theme">
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun"  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== Body ===== -->
+  <div class="body">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+
+      <details class="section" open>
+        <summary>Test Selection <span class="chev">▶</span></summary>
+        <div class="section-body">
+          <!-- Single test selection -->
+          <div id="singleTestSelection">
+            <div class="section-label">Test type</div>
+            <select class="select" id="testTypeSelect">
+              <option value="Baseline" selected>Baseline</option>
+              <option value="Remove Tests">Remove Tests</option>
+              <option value="Hyperparameter">Hyperparameter</option>
+            </select>
+
+            <!-- Remove Tests sub-controls -->
+            <div id="removeFields" style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <div class="section-label">Features removed</div>
+                <select class="select" id="featuresRemovedSelect"></select>
+              </div>
+              <div>
+                <div class="section-label">Available test</div>
+                <select class="select" id="removeTestSelect"></select>
+              </div>
+            </div>
+
+            <!-- Hyperparameter sub-controls -->
+            <div id="hyperFields" style="margin-top: 12px; display: none; flex-direction: column; gap: 10px;">
+              <div>
+                <div class="section-label">WS / FH set</div>
+                <select class="select" id="wsFhSelect"></select>
+              </div>
+              <div>
+                <div class="section-label">Available model</div>
+                <select class="select" id="modelSelect"></select>
+              </div>
+            </div>
+
+            <!-- Baseline note -->
+            <div id="baselineNote" style="margin-top: 12px; display: none; padding: 10px 12px; background: var(--bg-2); border: 1px dashed var(--line-2); border-radius: 8px; color: var(--ink-3); font-size: 11px; line-height: 1.5;">
+              Baseline configuration · all 20 features active, default FH = 30 / WS = 90, reference model.
+            </div>
+          </div>
+
+          <!-- Multi-test selection -->
+          <div id="multiTestSelection" style="display:none">
+            <div class="section-label">Number of tests</div>
+            <select class="select" id="multiCountSelect">
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+            <div id="multiSlots"></div>
+          </div>
+
+          <button id="loadTestBtn" class="load-test-btn">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7l3 3 7-7"/></svg>
+            <span id="loadTestLabel">LOAD TEST</span>
+          </button>
+        </div>
+      </details>
+
+
+
+      <details class="section" open>
+        <summary>Playback <span class="chev">▶</span></summary>
+        <div class="section-body">
+          <div class="playback-row">
+            <button class="pb-btn primary" id="playBtn">
+              <svg viewBox="0 0 10 10"><polygon points="2,1 9,5 2,9" fill="currentColor"/></svg>
+              PLAY
+            </button>
+            <button class="pb-btn" id="pauseBtn">
+              <svg viewBox="0 0 10 10"><rect x="2" y="1" width="2" height="8" fill="currentColor"/><rect x="6" y="1" width="2" height="8" fill="currentColor"/></svg>
+              PAUSE
+            </button>
+            <button class="pb-btn" id="resetBtn">
+              <svg viewBox="0 0 10 10"><polygon points="8,1 1,5 8,9" fill="currentColor"/><rect x="0" y="1" width="1.5" height="8" fill="currentColor"/></svg>
+              RESET
+            </button>
+          </div>
+          <div class="scrubber-wrap">
+            <div class="scrubber" id="scrubber">
+              <div class="scrubber-fill" id="scrubberFill"></div>
+              <div class="scrubber-thumb" id="scrubberThumb"></div>
+            </div>
+            <div class="scrubber-time">
+              <span id="timeNow">0 / 0</span>
+              <span id="speedLabel">80 steps/tick</span>
+              <span id="timeEnd">0</span>
+            </div>
+            <div style="margin-top: 10px;">
+              <div class="section-label" style="margin-bottom: 4px;">
+                <span>Playback speed</span>
+                <span id="speedValue" class="mono" style="color: var(--accent);">1×</span>
+              </div>
+              <div class="slider-row">
+                <input type="range" class="slider" id="speedSlider" min="0" max="6" step="1" value="3" />
+              </div>
+              <div class="ticks">
+                <span style="left: calc(7px + 0 * (100% - 14px) / 6)">0.25×</span>
+                <span style="left: calc(7px + 1 * (100% - 14px) / 6)">0.5×</span>
+                <span style="left: calc(7px + 2 * (100% - 14px) / 6)">0.75×</span>
+                <span style="left: calc(7px + 3 * (100% - 14px) / 6)">1×</span>
+                <span style="left: calc(7px + 4 * (100% - 14px) / 6)">1.5×</span>
+                <span style="left: calc(7px + 5 * (100% - 14px) / 6)">2×</span>
+                <span style="left: calc(7px + 6 * (100% - 14px) / 6)">3×</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="section" open>
+        <summary>Live Metrics <span class="chev">▶</span></summary>
+        <div class="section-body">
+          <table class="metrics-table">
+            <thead>
+              <tr><th>Metric</th><th style="text-align:right;">Value</th></tr>
+            </thead>
+            <tbody id="metricsBody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <details class="section" open>
+        <summary>Test Info <span class="chev">▶</span></summary>
+        <div class="section-body" id="modelInfoBody" style="font-size: 11px; color: var(--ink-2); line-height: 1.6;">
+          <div class="mi-empty" style="color: var(--ink-3); font-style: italic;">No test loaded — select a configuration and press LOAD TEST.</div>
+        </div>
+      </details>
+
+    </aside>
+
+    <!-- ===== Main grid ===== -->
+    <main>
+
+      <!-- Linear Path -->
+      <section class="panel">
+          <button class="panel-collapse" aria-label="Collapse">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M12 8v4H8M2 8v4h4M12 6V2H8"/></svg>
+            COLLAPSE
+          </button>
+        <div class="panel-head">
+          <div class="panel-title"><i class="accent"></i>Linear Path <span style="color:var(--ink-3); font-weight:400; letter-spacing:0.06em;">— 3D Trajectory</span></div>
+          <div class="panel-meta">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="legend left-stack" data-target="linear">
+            <div class="legend-row" data-key="truth">
+              <span class="legend-item"><span class="legend-swatch" style="background:#ef4444; height:3px;"></span>GROUND TRUTH</span>
+              <button class="legend-eye" data-toggle="truth" title="Hide ground truth" aria-label="Hide ground truth">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>
+              </button>
+            </div>
+            <div class="legend-row" data-key="pred">
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--accent); height:3px; width:14px;"></span>PREDICTED</span>
+              <button class="legend-eye" data-toggle="pred" title="Hide predicted" aria-label="Hide predicted">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>
+              </button>
+            </div>
+          </div>
+          <canvas class="panel-canvas" id="cvLinear"></canvas>
+        </div>
+      </section>
+
+      <!-- Complex Path -->
+      <section class="panel purple">
+          <button class="panel-collapse" aria-label="Collapse">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M12 8v4H8M2 8v4h4M12 6V2H8"/></svg>
+            COLLAPSE
+          </button>
+        <div class="panel-head">
+          <div class="panel-title"><i class="accent"></i>Complex Path <span style="color:var(--ink-3); font-weight:400; letter-spacing:0.06em;">— 3D Trajectory</span></div>
+          <div class="panel-meta">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="legend left-stack" data-target="complex">
+            <div class="legend-row" data-key="truth">
+              <span class="legend-item"><span class="legend-swatch" style="background:#ef4444; height:3px;"></span>GROUND TRUTH</span>
+              <button class="legend-eye" data-toggle="truth" title="Hide ground truth" aria-label="Hide ground truth">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>
+              </button>
+            </div>
+            <div class="legend-row" data-key="pred">
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--accent); height:3px; width:14px;"></span>PREDICTED</span>
+              <button class="legend-eye" data-toggle="pred" title="Hide predicted" aria-label="Hide predicted">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>
+              </button>
+            </div>
+          </div>
+          <canvas class="panel-canvas" id="cvComplex"></canvas>
+        </div>
+      </section>
+
+      <!-- Empirical CDF -->
+      <section class="panel amber">
+          <button class="panel-collapse" aria-label="Collapse">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M12 8v4H8M2 8v4h4M12 6V2H8"/></svg>
+            COLLAPSE
+          </button>
+        <div class="panel-head">
+          <div class="panel-title"><i class="accent"></i>Empirical CDF <span style="color:var(--ink-3); font-weight:400; letter-spacing:0.06em;">— Position Error</span></div>
+          <div class="panel-meta">
+            <span id="cdfNLabel">n = 0</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--accent); box-shadow: 0 0 6px var(--accent);"></span>POSITION ERROR</span>
+          </div>
+          <canvas class="panel-canvas" id="cvCdf"></canvas>
+        </div>
+      </section>
+
+      <!-- MAE per Axis -->
+      <section class="panel">
+          <button class="panel-collapse" aria-label="Collapse">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M2 6V2h4M12 8v4H8M2 8v4h4M12 6V2H8"/></svg>
+            COLLAPSE
+          </button>
+        <div class="panel-head">
+          <div class="panel-title"><i class="accent"></i>MAE per Axis <span style="color:var(--ink-3); font-weight:400; letter-spacing:0.06em;">— Forecast Horizon</span></div>
+          <div class="panel-meta">
+            <span>units: m</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--accent); height:8px; border-radius:1px;"></span>MAE per axis</span>
+          </div>
+          <canvas class="panel-canvas" id="cvBars"></canvas>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Manifest of all *_Trajectory_Results.csv files (relative paths)
+   ============================================================ */
+const MANIFEST = [
+  "Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH120_WS150/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH120_WS150/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH120_WS150/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH120_WS150/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH120_WS150/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS120/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH30_WS120/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS120/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS120/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS120/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS150/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH30_WS150/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS150/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS150/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS150/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS60/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH30_WS60/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS60/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS60/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS60/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS90/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH30_WS90/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS90/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS90/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH30_WS90/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS120/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH60_WS120/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS120/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS120/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS120/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS150/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH60_WS150/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS150/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS150/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS150/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS90/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH60_WS90/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS90/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS90/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH60_WS90/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS120/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH90_WS120/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS120/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS120/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS120/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS150/Baseline/Baseline_Trajectory_Results.csv",
+  "FH_WS/FH90_WS150/Best_1-Feat/Best_1-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS150/Best_2-Feat/Best_2-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS150/Best_3-Feat/Best_3-Feat_Trajectory_Results.csv",
+  "FH_WS/FH90_WS150/Best_4-Feat/Best_4-Feat_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_angular_x/angular_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_angular_y/angular_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_angular_z/angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_battery_current/battery_current_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_battery_voltage/battery_voltage_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_linear_acceleration_x/linear_acceleration_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_linear_acceleration_y/linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_linear_acceleration_z/linear_acceleration_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_orientation_w/orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_orientation_x/orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_orientation_y/orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_orientation_z/orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_position_x/position_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_position_y/position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_position_z/position_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_velocity_x/velocity_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_velocity_y/velocity_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_velocity_z/velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_wind_angle/wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_1_feature/Removed_wind_speed/wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_linear_acceleration_y_angular_z/linear_acceleration_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_linear_acceleration_y_orientation_w/linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_w_angular_z/orientation_w_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_x_angular_z/orientation_x_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_x_linear_acceleration_y/orientation_x_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_x_orientation_w/orientation_x_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_angular_z/orientation_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_linear_acceleration_y/orientation_y_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_orientation_w/orientation_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_orientation_x/orientation_y_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_velocity_z/orientation_y_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_wind_angle/orientation_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_y_wind_speed/orientation_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_angular_z/orientation_z_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_linear_acceleration_y/orientation_z_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_orientation_w/orientation_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_orientation_x/orientation_z_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_orientation_y/orientation_z_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_velocity_z/orientation_z_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_wind_angle/orientation_z_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_orientation_z_wind_speed/orientation_z_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_angular_z/position_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_linear_acceleration_y/position_y_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_orientation_w/position_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_orientation_x/position_y_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_orientation_y/position_y_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_orientation_z/position_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_velocity_z/position_y_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_wind_angle/position_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_position_y_wind_speed/position_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_velocity_z_angular_z/velocity_z_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_velocity_z_linear_acceleration_y/velocity_z_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_velocity_z_orientation_w/velocity_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_velocity_z_orientation_x/velocity_z_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_velocity_z_wind_speed/velocity_z_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_angular_z/wind_angle_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_linear_acceleration_y/wind_angle_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_orientation_w/wind_angle_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_orientation_x/wind_angle_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_velocity_z/wind_angle_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_angle_wind_speed/wind_angle_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_speed_angular_z/wind_speed_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_speed_linear_acceleration_y/wind_speed_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_speed_orientation_w/wind_speed_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_2_features/Removed_wind_speed_orientation_x/wind_speed_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_linear_acceleration_y/orientation_x_angular_z_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_orientation_w/orientation_x_angular_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_orientation_y/orientation_x_angular_z_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_orientation_z/orientation_x_angular_z_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_position_y/orientation_x_angular_z_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_velocity_z/orientation_x_angular_z_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_angular_z_wind_angle/orientation_x_angular_z_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_orientation_w/orientation_x_linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_orientation_y/orientation_x_linear_acceleration_y_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_orientation_z/orientation_x_linear_acceleration_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_position_y/orientation_x_linear_acceleration_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_wind_angle/orientation_x_linear_acceleration_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_x_linear_acceleration_y_wind_speed/orientation_x_linear_acceleration_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_angular_z/orientation_y_wind_angle_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_linear_acceleration_y/orientation_y_wind_angle_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_orientation_w/orientation_y_wind_angle_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_orientation_x/orientation_y_wind_angle_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_position_y/orientation_y_wind_angle_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_y_wind_angle_velocity_z/orientation_y_wind_angle_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_angular_z/orientation_z_orientation_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_linear_acceleration_y/orientation_z_orientation_y_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_orientation_w/orientation_z_orientation_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_orientation_x/orientation_z_orientation_y_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_position_y/orientation_z_orientation_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_velocity_z/orientation_z_orientation_y_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_wind_angle/orientation_z_orientation_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_orientation_z_orientation_y_wind_speed/orientation_z_orientation_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_angular_z/velocity_z_linear_acceleration_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_orientation_w/velocity_z_linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_orientation_x/velocity_z_linear_acceleration_y_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_orientation_y/velocity_z_linear_acceleration_y_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_orientation_z/velocity_z_linear_acceleration_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_position_y/velocity_z_linear_acceleration_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_wind_angle/velocity_z_linear_acceleration_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_velocity_z_linear_acceleration_y_wind_speed/velocity_z_linear_acceleration_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_linear_acceleration_y_angular_z/wind_angle_linear_acceleration_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_linear_acceleration_y_orientation_w/wind_angle_linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_linear_acceleration_y_orientation_z/wind_angle_linear_acceleration_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_linear_acceleration_y_position_y/wind_angle_linear_acceleration_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_angular_z/wind_angle_wind_speed_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_linear_acceleration_y/wind_angle_wind_speed_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_orientation_w/wind_angle_wind_speed_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_orientation_x/wind_angle_wind_speed_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_orientation_y/wind_angle_wind_speed_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_orientation_z/wind_angle_wind_speed_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_position_y/wind_angle_wind_speed_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_angle_wind_speed_velocity_z/wind_angle_wind_speed_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_linear_acceleration_y/wind_speed_angular_z_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_orientation_w/wind_speed_angular_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_orientation_x/wind_speed_angular_z_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_orientation_y/wind_speed_angular_z_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_orientation_z/wind_speed_angular_z_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_position_y/wind_speed_angular_z_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_angular_z_velocity_z/wind_speed_angular_z_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_linear_acceleration_y_orientation_w/wind_speed_linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_linear_acceleration_y_orientation_y/wind_speed_linear_acceleration_y_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_linear_acceleration_y_orientation_z/wind_speed_linear_acceleration_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_linear_acceleration_y_position_y/wind_speed_linear_acceleration_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_orientation_x_orientation_w/wind_speed_orientation_x_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_orientation_x_orientation_y/wind_speed_orientation_x_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_orientation_x_orientation_z/wind_speed_orientation_x_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_orientation_x_position_y/wind_speed_orientation_x_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_3_features/Removed_wind_speed_orientation_x_velocity_z/wind_speed_orientation_x_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_linear_acceleration_y/orientation_x_angular_z_orientation_w_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_orientation_y/orientation_x_angular_z_orientation_w_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_orientation_z/orientation_x_angular_z_orientation_w_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_position_y/orientation_x_angular_z_orientation_w_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_velocity_z/orientation_x_angular_z_orientation_w_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_wind_angle/orientation_x_angular_z_orientation_w_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_angular_z_orientation_w_wind_speed/orientation_x_angular_z_orientation_w_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_linear_acceleration_y_wind_angle_angular_z/orientation_x_linear_acceleration_y_wind_angle_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_linear_acceleration_y_wind_angle_orientation_z/orientation_x_linear_acceleration_y_wind_angle_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_linear_acceleration_y_wind_angle_position_y/orientation_x_linear_acceleration_y_wind_angle_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_x_linear_acceleration_y_wind_angle_wind_speed/orientation_x_linear_acceleration_y_wind_angle_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_linear_acceleration_y/orientation_y_wind_angle_angular_z_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_orientation_w/orientation_y_wind_angle_angular_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_orientation_x/orientation_y_wind_angle_angular_z_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_orientation_z/orientation_y_wind_angle_angular_z_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_position_y/orientation_y_wind_angle_angular_z_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_velocity_z/orientation_y_wind_angle_angular_z_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_angular_z_wind_speed/orientation_y_wind_angle_angular_z_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_linear_acceleration_y/orientation_y_wind_angle_orientation_x_linear_acceleration_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_orientation_w/orientation_y_wind_angle_orientation_x_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_orientation_z/orientation_y_wind_angle_orientation_x_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_position_y/orientation_y_wind_angle_orientation_x_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_velocity_z/orientation_y_wind_angle_orientation_x_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_orientation_y_wind_angle_orientation_x_wind_speed/orientation_y_wind_angle_orientation_x_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_angular_z/velocity_z_linear_acceleration_y_orientation_x_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_orientation_w/velocity_z_linear_acceleration_y_orientation_x_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_orientation_y/velocity_z_linear_acceleration_y_orientation_x_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_orientation_z/velocity_z_linear_acceleration_y_orientation_x_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_position_y/velocity_z_linear_acceleration_y_orientation_x_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_wind_angle/velocity_z_linear_acceleration_y_orientation_x_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_x_wind_speed/velocity_z_linear_acceleration_y_orientation_x_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_angular_z/velocity_z_linear_acceleration_y_orientation_y_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_orientation_w/velocity_z_linear_acceleration_y_orientation_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_orientation_z/velocity_z_linear_acceleration_y_orientation_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_position_y/velocity_z_linear_acceleration_y_orientation_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_wind_angle/velocity_z_linear_acceleration_y_orientation_y_wind_angle_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_velocity_z_linear_acceleration_y_orientation_y_wind_speed/velocity_z_linear_acceleration_y_orientation_y_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_angular_z/wind_angle_linear_acceleration_y_orientation_w_angular_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_orientation_x/wind_angle_linear_acceleration_y_orientation_w_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_orientation_y/wind_angle_linear_acceleration_y_orientation_w_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_orientation_z/wind_angle_linear_acceleration_y_orientation_w_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_position_y/wind_angle_linear_acceleration_y_orientation_w_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_velocity_z/wind_angle_linear_acceleration_y_orientation_w_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_linear_acceleration_y_orientation_w_wind_speed/wind_angle_linear_acceleration_y_orientation_w_wind_speed_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_angular_z_orientation_w/wind_angle_wind_speed_angular_z_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_angular_z_orientation_x/wind_angle_wind_speed_angular_z_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_angular_z_orientation_z/wind_angle_wind_speed_angular_z_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_angular_z_position_y/wind_angle_wind_speed_angular_z_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_angular_z_velocity_z/wind_angle_wind_speed_angular_z_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_orientation_w_orientation_x/wind_angle_wind_speed_orientation_w_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_orientation_w_orientation_y/wind_angle_wind_speed_orientation_w_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_orientation_w_orientation_z/wind_angle_wind_speed_orientation_w_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_orientation_w_position_y/wind_angle_wind_speed_orientation_w_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_angle_wind_speed_orientation_w_velocity_z/wind_angle_wind_speed_orientation_w_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_orientation_w/wind_speed_angular_z_linear_acceleration_y_orientation_w_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_orientation_x/wind_speed_angular_z_linear_acceleration_y_orientation_x_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_orientation_y/wind_speed_angular_z_linear_acceleration_y_orientation_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_orientation_z/wind_speed_angular_z_linear_acceleration_y_orientation_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_position_y/wind_speed_angular_z_linear_acceleration_y_position_y_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_velocity_z/wind_speed_angular_z_linear_acceleration_y_velocity_z_Trajectory_Results.csv",
+  "Remove_Tests/Remove_4_features/Removed_wind_speed_angular_z_linear_acceleration_y_wind_angle/wind_speed_angular_z_linear_acceleration_y_wind_angle_Trajectory_Results.csv",
+];
+
+/* ============================================================
+   Build nested category structure from manifest
+   ============================================================ */
+const TESTS = {
+  Baseline: { default: { Baseline: "Baseline/Baseline_Trajectory_Results.csv" } },
+  "Remove Tests": {},  // keyed by features-removed count ("1"-"4"), then by test name
+  Hyperparameter: {},  // keyed by "FH X · WS Y" label, then by model name
+};
+function naturalKey(s) {
+  return s.split(/(\d+)/).map(t => /^\d+$/.test(t) ? parseInt(t,10) : t.toLowerCase());
+}
+function naturalCmp(a, b) {
+  const ka = naturalKey(a), kb = naturalKey(b);
+  for (let i = 0; i < Math.min(ka.length, kb.length); i++) {
+    if (ka[i] < kb[i]) return -1;
+    if (ka[i] > kb[i]) return 1;
+  }
+  return ka.length - kb.length;
+}
+MANIFEST.forEach(p => {
+  if (p.startsWith("FH_WS/")) {
+    const parts = p.split("/");
+    const cfg = parts[1];
+    const model = parts[2];
+    const m = cfg.match(/FH(\d+)_WS(\d+)/);
+    if (!m) return;
+    const label = `FH ${m[1]} · WS ${m[2]}`;
+    if (!TESTS.Hyperparameter[label]) TESTS.Hyperparameter[label] = {};
+    TESTS.Hyperparameter[label][model] = p;
+  } else if (p.startsWith("Remove_Tests/")) {
+    const parts = p.split("/");
+    const n = parts[1].match(/Remove_(\d+)/);
+    if (!n) return;
+    const count = n[1];
+    const testName = parts[2].replace(/^Removed_/, "");
+    if (!TESTS["Remove Tests"][count]) TESTS["Remove Tests"][count] = {};
+    TESTS["Remove Tests"][count][testName] = p;
+  }
+});
+
+function fhFromLabel(label) {
+  const m = label && label.match(/FH\s*(\d+)/);
+  return m ? parseInt(m[1], 10) : 30;
+}
+
+/* ============================================================
+   Constants (mirroring dashboard.py)
+   ============================================================ */
+const REF_LAT = 35.0;
+const M_PER_DEG_LAT = 111320;
+const M_PER_DEG_LON = 111320 * Math.cos(REF_LAT * Math.PI / 180);
+const DEFAULT_FH = 30;
+const DEFAULT_LINEAR_SLICE  = [4500, 15000];
+const DEFAULT_COMPLEX_SLICE = [33000, 40500];
+const TRAIL_CAP = 3000;
+const CDF_FILL_EVERY = 6;
+
+/* ============================================================
+   Helpers
+   ============================================================ */
+const COLORS = {
+  teal:   '#facc15',
+  purple: '#facc15',
+  amber:  '#facc15',
+  ink:    '#e6e8ef',
+  ink2:   '#a8aebd',
+  ink3:   '#6b7180',
+  grid:   'rgba(255,255,255,0.05)',
+  gridStrong: 'rgba(255,255,255,0.10)',
+  panel:  '#0f1117',
+  // teal/purple/amber tokens kept as keys but mapped to the unified yellow accent
+  teal:   '#facc15',
+  // Trajectory colours
+  truth:  '#ef4444',
+  pred:   '#facc15',
+  axis:        'rgba(255,255,255,0.35)',
+  floorGrid:   'rgba(255,255,255,0.07)',
+  ghost:       'rgba(180,180,180,0.14)',
+  guide:       'rgba(168,174,189,0.45)',
+  legendBg:    'rgba(15,17,23,0.8)',
+};
+
+function refreshThemeColors() {
+  const light = document.body.classList.contains('light');
+  if (light) {
+    COLORS.ink         = '#18181b';
+    COLORS.ink2        = '#52525b';
+    COLORS.ink3        = '#a1a1aa';
+    COLORS.grid        = 'rgba(0,0,0,0.05)';
+    COLORS.gridStrong  = 'rgba(0,0,0,0.10)';
+    COLORS.panel       = '#ffffff';
+    COLORS.axis        = 'rgba(0,0,0,0.45)';
+    COLORS.floorGrid   = 'rgba(0,0,0,0.06)';
+    COLORS.ghost       = 'rgba(0,0,0,0.16)';
+    COLORS.guide       = 'rgba(82,82,91,0.55)';
+    COLORS.legendBg    = 'rgba(255,255,255,0.92)';
+    COLORS.accent      = '#1d4ed8';
+    COLORS.accentDim   = 'rgba(29,78,216,0.10)';
+    COLORS.pred        = '#1d4ed8';
+    COLORS.truth       = '#dc2626';
+  } else {
+    COLORS.ink         = '#e6e8ef';
+    COLORS.ink2        = '#a8aebd';
+    COLORS.ink3        = '#6b7180';
+    COLORS.grid        = 'rgba(255,255,255,0.05)';
+    COLORS.gridStrong  = 'rgba(255,255,255,0.10)';
+    COLORS.panel       = '#0f1117';
+    COLORS.axis        = 'rgba(255,255,255,0.35)';
+    COLORS.floorGrid   = 'rgba(255,255,255,0.07)';
+    COLORS.ghost       = 'rgba(180,180,180,0.14)';
+    COLORS.guide       = 'rgba(168,174,189,0.45)';
+    COLORS.legendBg    = 'rgba(15,17,23,0.8)';
+    COLORS.accent      = '#facc15';
+    COLORS.accentDim   = 'rgba(250,204,21,0.10)';
+    COLORS.pred        = '#facc15';
+    COLORS.truth       = '#ef4444';
+  }
+};
+
+function fitCanvas(canvas) {
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  const r = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.floor(r.width));
+  const h = Math.max(1, Math.floor(r.height));
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+
+/* ============================================================
+   Sidebar populate / wire
+   ============================================================ */
+const testTypeSelect       = document.getElementById('testTypeSelect');
+const removeFields         = document.getElementById('removeFields');
+const hyperFields          = document.getElementById('hyperFields');
+const baselineNote         = document.getElementById('baselineNote');
+const featuresRemovedSelect = document.getElementById('featuresRemovedSelect');
+const removeTestSelect      = document.getElementById('removeTestSelect');
+const wsFhSelect            = document.getElementById('wsFhSelect');
+const modelSelect           = document.getElementById('modelSelect');
+
+function fillOptions(sel, values, preferred) {
+  sel.innerHTML = "";
+  values.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  if (preferred && values.includes(preferred)) sel.value = preferred;
+  else if (values.length) sel.value = values[0];
+}
+
+function populateRemove() {
+  const counts = Object.keys(TESTS["Remove Tests"]).sort(naturalCmp);
+  fillOptions(featuresRemovedSelect, counts);
+  populateRemoveTests();
+}
+function populateRemoveTests() {
+  const cnt = featuresRemovedSelect.value;
+  const tests = Object.keys(TESTS["Remove Tests"][cnt] || {}).sort(naturalCmp);
+  fillOptions(removeTestSelect, tests);
+}
+function populateHyper() {
+  const cfgs = Object.keys(TESTS.Hyperparameter).sort(naturalCmp);
+  fillOptions(wsFhSelect, cfgs);
+  populateHyperModels();
+}
+function populateHyperModels() {
+  const cfg = wsFhSelect.value;
+  const models = Object.keys(TESTS.Hyperparameter[cfg] || {}).sort(naturalCmp);
+  fillOptions(modelSelect, models);
+}
+
+function applyTestType(t) {
+  removeFields.style.display = (t === 'Remove Tests')   ? 'flex' : 'none';
+  hyperFields.style.display  = (t === 'Hyperparameter') ? 'flex' : 'none';
+  baselineNote.style.display = (t === 'Baseline')       ? 'block': 'none';
+}
+testTypeSelect.addEventListener('change', e => applyTestType(e.target.value));
+featuresRemovedSelect.addEventListener('change', populateRemoveTests);
+wsFhSelect.addEventListener('change', populateHyperModels);
+
+applyTestType(testTypeSelect.value);
+populateRemove();
+populateHyper();
+
+function getSelectedCsvPath() {
+  const t = testTypeSelect.value;
+  if (t === 'Baseline') {
+    return { path: TESTS.Baseline.default.Baseline, fh: DEFAULT_FH, label: 'Baseline / default / Baseline' };
+  }
+  if (t === 'Remove Tests') {
+    const cnt = featuresRemovedSelect.value;
+    const test = removeTestSelect.value;
+    const path = (TESTS["Remove Tests"][cnt] || {})[test];
+    return { path, fh: DEFAULT_FH, label: `Remove_Tests / Remove_${cnt}_feature${cnt==='1'?'':'s'} / ${test}` };
+  }
+  if (t === 'Hyperparameter') {
+    const cfg = wsFhSelect.value;
+    const model = modelSelect.value;
+    const path = (TESTS.Hyperparameter[cfg] || {})[model];
+    return { path, fh: fhFromLabel(cfg), label: `FH_WS / ${cfg} / ${model}` };
+  }
+  return { path: null, fh: DEFAULT_FH, label: '' };
+}
+
+/* ============================================================
+   CSV loading / parsing
+   ============================================================ */
+async function fetchCsv(path) {
+  // Encode path components so spaces / special chars work; keep slashes.
+  const url = path.split('/').map(encodeURIComponent).join('/');
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} on ${path}`);
+  return await resp.text();
+}
+
+function parseTrajectoryCsv(text) {
+  // header: pred_x,pred_y,pred_z,true_x,true_y,true_z,euclidean_error_m
+  let i = 0;
+  const nl = text.indexOf('\n');
+  if (nl < 0) throw new Error("Empty CSV");
+  i = nl + 1;
+
+  // Count lines to preallocate
+  let lineCount = 0;
+  for (let k = i; k < text.length; k++) {
+    if (text.charCodeAt(k) === 10) lineCount++;
+  }
+  if (text.length > 0 && text.charCodeAt(text.length - 1) !== 10) lineCount++;
+
+  const px = new Float64Array(lineCount);
+  const py = new Float64Array(lineCount);
+  const pz = new Float64Array(lineCount);
+  const tx = new Float64Array(lineCount);
+  const ty = new Float64Array(lineCount);
+  const tz = new Float64Array(lineCount);
+  const err = new Float64Array(lineCount);
+
+  let row = 0;
+  while (i < text.length) {
+    let end = text.indexOf('\n', i);
+    if (end === -1) end = text.length;
+    if (end > i) {
+      // split on commas
+      const parts = text.substring(i, end).split(',');
+      if (parts.length >= 7) {
+        px[row] = +parts[0]; py[row] = +parts[1]; pz[row] = +parts[2];
+        tx[row] = +parts[3]; ty[row] = +parts[4]; tz[row] = +parts[5];
+        err[row] = +parts[6];
+        row++;
+      }
+    }
+    i = end + 1;
+  }
+  return { px, py, pz, tx, ty, tz, err, n: row };
+}
+
+/* ============================================================
+   Data state (mirrors Dashboard fields)
+   ============================================================ */
+let DATA = null;       // raw parsed CSV
+let firstStep = null;  // { tx, ty, tz, px, py, pz, n }  one point per FH window
+let fullErrors = null; // Float64Array — full CSV euclidean error
+let fullAbs = null;    // { ex, ey, ez }  full CSV per-axis absolute error in METERS
+let linSlice = DEFAULT_LINEAR_SLICE.slice();
+let cpxSlice = DEFAULT_COMPLEX_SLICE.slice();
+let linSeg = null;     // { tx,ty,tz, px,py,pz, n }  origin-translated
+let cpxSeg = null;
+let curFH = DEFAULT_FH;
+let step = 0;
+let playing = false;
+let frameIdx = 0;
+
+const visibility = {
+  linear:  { truth: true, pred: true, tests: [true, true, true, true] },
+  complex: { truth: true, pred: true, tests: [true, true, true, true] },
+};
+
+/* === Multi-test view mode === */
+let viewMode = 'single';            // 'single' | 'multi'
+let multiCount = 2;                 // 2..4
+let loadedTests = [];               // each: {data,firstStep,linSeg,cpxSeg,fullErrors,fullAbs,curFH,label,selection,color}
+const MULTI_PALETTE_DARK  = ['#facc15', '#22d3ee', '#ec4899', '#84cc16'];
+const MULTI_PALETTE_LIGHT = ['#1d4ed8', '#ea580c', '#7c3aed', '#0d9488'];
+function multiPalette() {
+  return document.body.classList.contains('light') ? MULTI_PALETTE_LIGHT : MULTI_PALETTE_DARK;
+}
+function slotColor(i) { return multiPalette()[i] || multiPalette()[0]; }
+
+function extractFirstStep(data, fh) {
+  fh = Math.max(1, fh);
+  const N = data.n;
+  const nWin = Math.max(1, Math.floor(N / fh));
+  let count = 0;
+  for (let i = 0; i < nWin; i++) if (i * fh < N) count++;
+  const out = {
+    tx: new Float64Array(count), ty: new Float64Array(count), tz: new Float64Array(count),
+    px: new Float64Array(count), py: new Float64Array(count), pz: new Float64Array(count),
+    n: count,
+  };
+  let w = 0;
+  for (let i = 0; i < nWin; i++) {
+    const idx = i * fh;
+    if (idx >= N) break;
+    out.tx[w] = data.tx[idx]; out.ty[w] = data.ty[idx]; out.tz[w] = data.tz[idx];
+    out.px[w] = data.px[idx]; out.py[w] = data.py[idx]; out.pz[w] = data.pz[idx];
+    w++;
+  }
+  return out;
+}
+
+function buildSegment(fs, slice) {
+  const start = Math.max(0, Math.min(slice[0], fs.n));
+  const end   = Math.max(start, Math.min(slice[1], fs.n));
+  const len = end - start;
+  const out = {
+    tx: new Float64Array(len), ty: new Float64Array(len), tz: new Float64Array(len),
+    px: new Float64Array(len), py: new Float64Array(len), pz: new Float64Array(len),
+    n: len,
+  };
+  if (len === 0) return out;
+  const ox = fs.tx[start], oy = fs.ty[start], oz = fs.tz[start];
+  for (let i = 0; i < len; i++) {
+    out.tx[i] = fs.tx[start+i] - ox;
+    out.ty[i] = fs.ty[start+i] - oy;
+    out.tz[i] = fs.tz[start+i] - oz;
+    out.px[i] = fs.px[start+i] - ox;
+    out.py[i] = fs.py[start+i] - oy;
+    out.pz[i] = fs.pz[start+i] - oz;
+  }
+  return out;
+}
+
+/* ============================================================
+   Test loading
+   ============================================================ */
+const loadTestBtn   = document.getElementById('loadTestBtn');
+const loadTestLabel = document.getElementById('loadTestLabel');
+const kpiSegs       = document.getElementById('kpiSegs');
+const cdfNLabel     = document.getElementById('cdfNLabel');
+const modelInfoBody = document.getElementById('modelInfoBody');
+
+function prettyFeat(f) {
+  return f.replace(/_/g, ' ');
+}
+
+function updateModelInfo(sel) {
+  if (viewMode === 'multi') { updateModelInfoMulti(); return; }
+  if (!sel || !DATA) {
+    modelInfoBody.innerHTML = '<div class="mi-empty" style="color: var(--ink-3); font-style: italic;">No test loaded — select a configuration and press LOAD TEST.</div>';
+    return;
+  }
+  const t = testTypeSelect.value;
+  const rows = [];
+  const row = (k, v) => `<div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:var(--ink-3)">${k}</span><span class="mono" style="text-align:right; word-break: break-word;">${v}</span></div>`;
+
+  rows.push(row('Test type', t));
+
+  if (t === 'Baseline') {
+    rows.push(row('Configuration', 'Baseline (reference)'));
+    rows.push(row('Forecast horizon', '30'));
+    rows.push(row('Window size', '90'));
+    rows.push(row('Features active', 'All 20'));
+    rows.push(row('Features removed', 'None'));
+  } else if (t === 'Remove Tests') {
+    const cnt = featuresRemovedSelect.value;
+    const test = removeTestSelect.value;
+    const feats = test.split('_').reduce((acc, part) => {
+      // join consecutive words that form a known feature name (e.g. linear_acceleration_x)
+      acc.push(part); return acc;
+    }, []);
+    rows.push(row('Forecast horizon', '30'));
+    rows.push(row('Window size', '90'));
+    rows.push(row('Features removed', cnt));
+    rows.push(row('Removed feature' + (cnt === '1' ? '' : 's'), prettyFeat(test)));
+  } else if (t === 'Hyperparameter') {
+    const cfg = wsFhSelect.value;
+    const model = modelSelect.value;
+    const m = cfg.match(/FH\s*(\d+)\s*·\s*WS\s*(\d+)/);
+    const fh = m ? m[1] : '—';
+    const ws = m ? m[2] : '—';
+    rows.push(row('Forecast horizon', fh));
+    rows.push(row('Window size', ws));
+    if (model === 'Baseline') {
+      rows.push(row('Variant', 'Baseline (all features)'));
+      rows.push(row('Features removed', '0'));
+    } else {
+      const fm = model.match(/Best_(\d+)-Feat/);
+      const k = fm ? fm[1] : '?';
+      rows.push(row('Variant', model.replace(/_/g, ' ')));
+      rows.push(row('Features removed', k + ' (best subset)'));
+    }
+  }
+
+  rows.push(row('Samples (rows)', DATA.n.toLocaleString()));
+  rows.push(row('Sample rate', '30 Hz'));
+  rows.push(row('Architecture', 'Transformer-LSTM'));
+  rows.push(row('Loaded at', new Date().toLocaleTimeString()));
+
+  modelInfoBody.innerHTML = rows.join('');
+}
+
+let loadToken = 0;
+async function loadSelected() {
+  if (loadTestBtn.classList.contains('loading')) return;
+  if (viewMode === 'multi') { loadSelectedMulti(); return; }
+  const sel = getSelectedCsvPath();
+  if (!sel.path) {
+    loadTestLabel.textContent = 'NO FILE';
+    return;
+  }
+  const myToken = ++loadToken;
+  loadTestBtn.classList.remove('done');
+  loadTestBtn.classList.add('loading');
+  loadTestLabel.textContent = 'LOADING…';
+  // stop animation while loading
+  playing = false;
+  try {
+    const text = await fetchCsv(sel.path);
+    if (myToken !== loadToken) return;
+    const parsed = parseTrajectoryCsv(text);
+    if (myToken !== loadToken) return;
+    DATA = parsed;
+    curFH = Math.max(1, sel.fh);
+    firstStep = extractFirstStep(DATA, curFH);
+
+    // CDF / MAE arrays — from FULL CSV (matches plot_MAE.py / plot_CDF.py)
+    fullErrors = DATA.err.slice(0, DATA.n);
+    const ex = new Float64Array(DATA.n);
+    const ey = new Float64Array(DATA.n);
+    const ez = new Float64Array(DATA.n);
+    for (let i = 0; i < DATA.n; i++) {
+      ex[i] = Math.abs(DATA.px[i] - DATA.tx[i]) * M_PER_DEG_LON;
+      ey[i] = Math.abs(DATA.py[i] - DATA.ty[i]) * M_PER_DEG_LAT;
+      ez[i] = Math.abs(DATA.pz[i] - DATA.tz[i]);
+    }
+    fullAbs = { ex, ey, ez };
+
+    clampSlicesToData();
+    linSeg = buildSegment(firstStep, linSlice);
+    cpxSeg = buildSegment(firstStep, cpxSlice);
+
+    step = 0;
+    frameIdx = 0;
+    kpiSegs && (kpiSegs.textContent = `L ${linSeg.n}  ·  C ${cpxSeg.n}`);
+    cdfNLabel.textContent = `n = ${DATA.n.toLocaleString()}`;
+
+    // Mirror into loadedTests so multi-aware code can read uniformly.
+    loadedTests = [{
+      data: DATA, firstStep, linSeg, cpxSeg, fullErrors, fullAbs, curFH,
+      label: sel.label, selection: { ...sel, type: testTypeSelect.value,
+        cnt: featuresRemovedSelect.value, test: removeTestSelect.value,
+        cfg: wsFhSelect.value, model: modelSelect.value },
+      color: COLORS.accent,
+    }];
+
+    loadTestBtn.classList.remove('loading');
+    loadTestBtn.classList.add('done');
+    loadTestLabel.textContent = 'LOADED';
+    updateModelInfo(sel);
+
+    // Stay paused after load — user must press Play to start the animation.
+    playing = false;
+    setPlayingUi(false);
+    needsRedraw = true;
+  } catch (e) {
+    console.error("Load failed", e);
+    loadTestBtn.classList.remove('loading');
+    loadTestLabel.textContent = 'LOAD FAILED';
+    setTimeout(() => { loadTestLabel.textContent = 'LOAD TEST'; }, 2000);
+  }
+}
+loadTestBtn.addEventListener('click', loadSelected);
+
+function markSelectionChanged() {
+  loadTestBtn.classList.remove('done');
+  if (!loadTestBtn.classList.contains('loading')) {
+    loadTestLabel.textContent = 'LOAD TEST';
+  }
+}
+[testTypeSelect, featuresRemovedSelect, removeTestSelect, wsFhSelect, modelSelect].forEach(el => {
+  el.addEventListener('change', markSelectionChanged);
+});
+
+function clampSlicesToData() {
+  const n = firstStep ? firstStep.n : 0;
+  const clamp = (a, b) => {
+    let s = Math.max(0, Math.min(Math.floor(a), n));
+    let e = Math.max(s, Math.min(Math.floor(b), n));
+    return [s, e];
+  };
+  linSlice = clamp(DEFAULT_LINEAR_SLICE[0], DEFAULT_LINEAR_SLICE[1]);
+  cpxSlice = clamp(DEFAULT_COMPLEX_SLICE[0], DEFAULT_COMPLEX_SLICE[1]);
+}
+
+/* ============================================================
+   Visibility toggles (legend eye buttons) — works for single + multi
+   ============================================================ */
+const EYE_OPEN  = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>';
+const EYE_CLOSED = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8s2.5-4.5 6.5-4.5S14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><path d="M2 14 14 2"/></svg>';
+
+function getVisibility(target, key) {
+  if (key.startsWith('test-')) {
+    const i = +key.slice(5);
+    return visibility[target].tests[i] !== false;
+  }
+  return visibility[target][key] !== false;
+}
+function setVisibility(target, key, val) {
+  if (key.startsWith('test-')) {
+    const i = +key.slice(5);
+    visibility[target].tests = visibility[target].tests || [];
+    visibility[target].tests[i] = val;
+  } else {
+    visibility[target][key] = val;
+  }
+}
+
+function wireLegendEyes(legend) {
+  const target = legend.dataset.target;
+  legend.querySelectorAll('.legend-eye').forEach(btn => {
+    if (btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = btn.dataset.toggle;
+      const next = !getVisibility(target, key);
+      setVisibility(target, key, next);
+      btn.classList.toggle('off', !next);
+      const labelText =
+        key === 'truth' ? 'ground truth' :
+        key === 'pred'  ? 'predicted' :
+        key.startsWith('test-') ? ('Test ' + (+key.slice(5) + 1)) : key;
+      btn.title = (next ? 'Hide ' : 'Show ') + labelText;
+      const row = legend.querySelector('.legend-row[data-key="' + key + '"]');
+      if (row) row.classList.toggle('muted', !next);
+      btn.innerHTML = next ? EYE_OPEN : EYE_CLOSED;
+      needsRedraw = true;
+    });
+  });
+}
+
+function buildLegendRow(key, swatch, label, visible) {
+  const muted = visible ? '' : ' muted';
+  return `
+    <div class="legend-row${muted}" data-key="${key}">
+      <span class="legend-item">${swatch}<span>${label}</span></span>
+      <button class="legend-eye ${visible ? '' : 'off'}" data-toggle="${key}" title="${visible ? 'Hide ' : 'Show '}${label.toLowerCase()}" aria-label="Toggle ${label}">
+        ${visible ? EYE_OPEN : EYE_CLOSED}
+      </button>
+    </div>`;
+}
+
+function rebuildLegends() {
+  document.querySelectorAll('.legend.left-stack').forEach(legend => {
+    const target = legend.dataset.target;
+    visibility[target].tests = visibility[target].tests || [true, true, true, true];
+    const truthSwatch = '<span class="legend-swatch" style="background:#ef4444; height:3px;"></span>';
+    let html = buildLegendRow('truth', truthSwatch, 'GROUND TRUTH', visibility[target].truth !== false);
+    if (viewMode === 'multi') {
+      for (let i = 0; i < multiCount; i++) {
+        const c = slotColor(i);
+        const sw = `<span class="legend-swatch" style="background:${c}; height:3px; width:14px;"></span>`;
+        html += buildLegendRow('test-' + i, sw, 'TEST ' + (i + 1), visibility[target].tests[i] !== false);
+      }
+    } else {
+      const sw = '<span class="legend-swatch" style="background:var(--accent); height:3px; width:14px;"></span>';
+      html += buildLegendRow('pred', sw, 'PREDICTED', visibility[target].pred !== false);
+    }
+    legend.innerHTML = html;
+    wireLegendEyes(legend);
+  });
+}
+rebuildLegends();
+
+/* ============================================================
+   Click-to-expand panels
+   ============================================================ */
+document.querySelectorAll('main .panel').forEach(panel => {
+  panel.addEventListener('click', (e) => {
+    if (panel.classList.contains('expanded')) return;
+    if (e.target.closest('.legend, .legend-eye, .panel-collapse')) return;
+    document.querySelector('main').classList.add('has-expanded');
+    panel.classList.add('expanded');
+  });
+  const cb = panel.querySelector('.panel-collapse');
+  if (cb) cb.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.remove('expanded');
+    document.querySelector('main').classList.remove('has-expanded');
+  });
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const ex = document.querySelector('main .panel.expanded');
+    if (ex) {
+      ex.classList.remove('expanded');
+      document.querySelector('main').classList.remove('has-expanded');
+    }
+  }
+});
+
+/* ============================================================
+   Playback controls
+   ============================================================ */
+const speedSlider = document.getElementById('speedSlider');
+const speedLabel  = document.getElementById('speedLabel');
+const speedValue  = document.getElementById('speedValue');
+const playBtn  = document.getElementById('playBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+const SPEED_MULTIPLIERS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3];
+const SPEED_BASE = 80; // steps/tick at 1×
+
+function setPlayingUi(p) {
+  if (p) { playBtn.classList.add('primary'); pauseBtn.classList.remove('primary'); }
+  else   { pauseBtn.classList.add('primary'); playBtn.classList.remove('primary'); }
+}
+
+function currentSpeedMultiplier() {
+  const idx = Math.max(0, Math.min(SPEED_MULTIPLIERS.length - 1, parseInt(speedSlider.value, 10) || 0));
+  return SPEED_MULTIPLIERS[idx];
+}
+function currentSpeed() { return Math.max(1, Math.round(currentSpeedMultiplier() * SPEED_BASE)); }
+function maxSegLen() {
+  if (viewMode === 'multi' && loadedTests.length) {
+    let m = 0;
+    for (const t of loadedTests) {
+      m = Math.max(m, t.linSeg ? t.linSeg.n : 0, t.cpxSeg ? t.cpxSeg.n : 0);
+    }
+    return m;
+  }
+  return Math.max(linSeg ? linSeg.n : 0, cpxSeg ? cpxSeg.n : 0);
+}
+
+function updateSpeedDisplay() {
+  const m = currentSpeedMultiplier();
+  const mLabel = (m === Math.floor(m)) ? m + '×' : m + '×';
+  speedValue.textContent = mLabel;
+  speedLabel.textContent = mLabel + '  ·  ' + currentSpeed() + ' steps/tick';
+}
+speedSlider.addEventListener('input', updateSpeedDisplay);
+updateSpeedDisplay();
+
+playBtn.addEventListener('click', () => {
+  if (!firstStep) return;
+  if (step >= maxSegLen() - 1) step = 0;
+  playing = true;
+  setPlayingUi(true);
+});
+pauseBtn.addEventListener('click', () => {
+  playing = false;
+  setPlayingUi(false);
+});
+resetBtn.addEventListener('click', () => {
+  step = 0;
+  needsRedraw = true;
+});
+
+const scrubFill  = document.getElementById('scrubberFill');
+const scrubThumb = document.getElementById('scrubberThumb');
+const timeNow    = document.getElementById('timeNow');
+const timeEnd    = document.getElementById('timeEnd');
+const scrubber   = document.getElementById('scrubber');
+function seekFromScrubber(clientX) {
+  const r = scrubber.getBoundingClientRect();
+  const frac = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  const m = maxSegLen();
+  if (m > 0) step = Math.min(m - 1, Math.floor(frac * m));
+}
+scrubber.addEventListener('click', e => { seekFromScrubber(e.clientX); needsRedraw = true; });
+
+/* ============================================================
+   Live metrics table — Python's "Live metrics" card
+   ============================================================ */
+const METRIC_ROWS = [
+  { key: 'mae_x',  label: 'MAE X (Lon)',   color: '#facc15' },
+  { key: 'mae_y',  label: 'MAE Y (Lat)',   color: '#facc15' },
+  { key: 'mae_z',  label: 'MAE Z (Alt)',   color: '#facc15' },
+  { key: 'mean',   label: 'Mean error',    color: '#facc15' },
+  { key: 'median', label: 'Median error',  color: '#facc15' },
+  { key: 'samples',label: 'Samples seen',  color: '#facc15' },
+];
+const tbody = document.getElementById('metricsBody');
+function renderMetricRows(values) {
+  if (viewMode === 'multi') { renderMetricRowsMulti(); return; }
+  // values keyed by row.key: { value: number|str, frac: 0..1 for bar width }
+  const accent = COLORS.accent;
+  tbody.innerHTML = METRIC_ROWS.map(r => {
+    const v = values[r.key] || { value: '—', frac: 0 };
+    const fracPct = Math.max(0, Math.min(1, v.frac || 0)) * 100;
+    return `
+      <tr>
+        <td>
+          <div class="cls">${r.label}</div>
+          <div class="metrics-bar"><i style="width:${fracPct.toFixed(1)}%; background:${accent}; box-shadow:0 0 6px ${accent};"></i></div>
+        </td>
+        <td class="val">${v.value}</td>
+      </tr>`;
+  }).join('');
+}
+renderMetricRows({});
+
+/* ============================================================
+   3D projection — matches matplotlib mpl_toolkits.mplot3d
+   with view_init(elev=25, azim=-55) (see plot_3D.py).
+   ============================================================ */
+const VIEW_ELEV = 25 * Math.PI / 180;
+const VIEW_AZIM = -55 * Math.PI / 180;
+const VIEW_SA = Math.sin(VIEW_AZIM), VIEW_CA = Math.cos(VIEW_AZIM);
+const VIEW_SE = Math.sin(VIEW_ELEV), VIEW_CE = Math.cos(VIEW_ELEV);
+function project(x, y, z, cx, cy, scale) {
+  // matplotlib 3D projection (look-at construction):
+  //   u = (-sin_a,  cos_a, 0)                 → screen right
+  //   v = (-sin_e*cos_a, -sin_e*sin_a, cos_e) → screen up (math y)
+  const xs = -x * VIEW_SA + y * VIEW_CA;
+  const ys = -x * VIEW_SE * VIEW_CA - y * VIEW_SE * VIEW_SA + z * VIEW_CE;
+  // Canvas y grows downward, so flip ys.
+  return [cx + xs * scale, cy - ys * scale];
+}
+/* Depth of a world point (larger = closer to camera). Used to decide
+   which cube faces are at the back (drawn as background panes). */
+function depth(x, y, z) {
+  return x * Math.cos(VIEW_ELEV) * Math.cos(VIEW_AZIM)
+       + y * Math.cos(VIEW_ELEV) * Math.sin(VIEW_AZIM)
+       + z * Math.sin(VIEW_ELEV);
+}
+function drawAxes(ctx, w, h, cx, cy, scale) {
+  // Minimal axes: three thin lines from origin (at the back-bottom corner)
+  // with axis-name labels at the tips, plus a floor grid on the z = -R plane.
+  const R = 1.0;
+  const ox = depth(+R, 0, 0) < depth(-R, 0, 0) ? -R : +R; // origin sits at the corner
+  const oy = depth(0, +R, 0) < depth(0, -R, 0) ? -R : +R;
+  const oz = depth(0, 0, +R) < depth(0, 0, -R) ? -R : +R;
+  const axisColor = COLORS.axis;
+  const gridColor = COLORS.floorGrid;
+  const labelColor = COLORS.ink2;
+  function p(x, y, z) { return project(x, y, z, cx, cy, scale); }
+
+  // ---- Floor grid (z = -R) ----
+  ctx.save();
+  ctx.strokeStyle = gridColor; ctx.lineWidth = 1;
+  const N = 8;
+  for (let i = 0; i <= N; i++) {
+    const t = -R + (2*R) * (i / N);
+    let g1 = p(-R, t, -R); let g2 = p(+R, t, -R);
+    ctx.beginPath(); ctx.moveTo(g1[0],g1[1]); ctx.lineTo(g2[0],g2[1]); ctx.stroke();
+    g1 = p(t, -R, -R); g2 = p(t, +R, -R);
+    ctx.beginPath(); ctx.moveTo(g1[0],g1[1]); ctx.lineTo(g2[0],g2[1]); ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.strokeStyle = axisColor; ctx.lineWidth = 1;
+  // Anchor every axis at the floor corner (ox, oy, -R) so X and Y lie on
+  // the grid and Z rises vertically from the same point.
+  const floor = -R;
+  let a = p(ox, oy, floor);           // floor corner
+  let b = p(-ox, oy, floor);          // +X tip on floor
+  ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+  let c = p(ox, -oy, floor);          // +Y tip on floor
+  ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(c[0],c[1]); ctx.stroke();
+  // Z axis starts where the Y axis ends and rises vertically.
+  let zBase = p(ox, -oy, floor);
+  let d     = p(ox, -oy, -floor);     // +Z tip directly above the +Y tip
+  ctx.beginPath(); ctx.moveTo(zBase[0], zBase[1]); ctx.lineTo(d[0], d[1]); ctx.stroke();
+  ctx.restore();
+  // Labels at the far tips
+  ctx.fillStyle = labelColor;
+  ctx.font = '600 10px JetBrains Mono, monospace';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillText('  Longitude (dd)', b[0], b[1] + 6);
+  ctx.fillText('  Latitude (dd)',  c[0], c[1] + 6);
+  ctx.fillText('  Altitude (m)',   d[0], d[1] - 6);
+}
+
+/* Compute normalization bounds for a segment so it fits the [-1,1] unit cube */
+function computeBounds(seg, showTruth, showPred) {
+  if (!seg || seg.n === 0) return null;
+  let mnx=+Infinity,mxx=-Infinity, mny=+Infinity,mxy=-Infinity, mnz=+Infinity,mxz=-Infinity;
+  const include = (x,y,z) => {
+    if (x<mnx) mnx=x; if (x>mxx) mxx=x;
+    if (y<mny) mny=y; if (y>mxy) mxy=y;
+    if (z<mnz) mnz=z; if (z>mxz) mxz=z;
+  };
+  for (let i = 0; i < seg.n; i++) {
+    if (showTruth) include(seg.tx[i], seg.ty[i], seg.tz[i]);
+    if (showPred)  include(seg.px[i], seg.py[i], seg.pz[i]);
+  }
+  if (!isFinite(mnx)) return null;
+  const margin = 0.06;
+  const pad = (lo, hi) => {
+    const r = hi-lo || 1;
+    return [lo - r*margin, hi + r*margin];
+  };
+  const [xl,xh] = pad(mnx,mxx);
+  const [yl,yh] = pad(mny,mxy);
+  const [zl,zh] = pad(mnz,mxz);
+  return { xl,xh, yl,yh, zl,zh };
+}
+
+function normalize(seg, bounds) {
+  // Per-axis normalisation so each of X/Y/Z fills [-1, 1] independently
+  // (mirrors matplotlib's auto set_xlim/set_ylim/set_zlim in dashboard.py).
+  // Without this, the metres-scale Z swamps the degree-scale lat/lon.
+  if (!bounds) return null;
+  const dx = bounds.xh - bounds.xl || 1;
+  const dy = bounds.yh - bounds.yl || 1;
+  const dz = bounds.zh - bounds.zl || 1;
+  const cx = (bounds.xh + bounds.xl) / 2;
+  const cy = (bounds.yh + bounds.yl) / 2;
+  const cz = (bounds.zh + bounds.zl) / 2;
+  return { cx, cy, cz, kx: 2/dx, ky: 2/dy, kz: 2/dz };
+}
+function px(seg, i, norm, kind) {
+  // kind = 't' or 'p'
+  const x = (kind==='t'?seg.tx[i]:seg.px[i]) - norm.cx;
+  const y = (kind==='t'?seg.ty[i]:seg.py[i]) - norm.cy;
+  const z = (kind==='t'?seg.tz[i]:seg.pz[i]) - norm.cz;
+  return [x*norm.kx, y*norm.ky, z*norm.kz];
+}
+
+function trailIndices(k, cap) {
+  // k = inclusive last index, returns array of indices length <= cap, preserving head
+  const n = k + 1;
+  if (n <= cap) {
+    const idx = new Int32Array(n);
+    for (let i = 0; i < n; i++) idx[i] = i;
+    return idx;
+  }
+  const idx = new Int32Array(cap);
+  const step = k / (cap - 2);
+  for (let i = 0; i < cap - 1; i++) idx[i] = Math.floor(i * step);
+  idx[cap - 1] = k;
+  return idx;
+}
+
+/* ============================================================
+   Draw 3D path panel (real data)
+   ============================================================ */
+function drawPath3D(canvas, segment, step, showTruth, showPred, colorTruth, colorPred) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const cx = w * 0.5, cy = h * 0.52;
+  const scale = Math.min(w, h) * 0.30;
+  drawAxes(ctx, w, h, cx, cy, scale);
+
+  if (!segment || segment.n === 0) return null;
+  const bounds = computeBounds(segment, showTruth, showPred);
+  const norm = normalize(segment, bounds);
+  if (!norm) return null;
+
+  const k = Math.max(0, Math.min(step, segment.n - 1));
+
+  // Faint full ground-truth path (ghost)
+  ctx.save();
+  ctx.strokeStyle = COLORS.ghost;
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  for (let i = 0; i < segment.n; i++) {
+    const p = px(segment, i, norm, 't');
+    const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+    if (i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  const indices = trailIndices(k, TRAIL_CAP);
+
+  // Ground truth (live trail) — bold solid red
+  if (showTruth) {
+    ctx.save();
+    ctx.strokeStyle = colorTruth; ctx.lineWidth = 2.4;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let n = 0; n < indices.length; n++) {
+      const i = indices[n];
+      const p = px(segment, i, norm, 't');
+      const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+      if (n===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Predicted trail — bold solid yellow
+  if (showPred) {
+    ctx.save();
+    ctx.strokeStyle = colorPred; ctx.lineWidth = 2.2;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let n = 0; n < indices.length; n++) {
+      const i = indices[n];
+      const p = px(segment, i, norm, 'p');
+      const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+      if (n===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Heads — small markers, no floor shadow, no altitude leader.
+  const t = px(segment, k, norm, 't');
+  const [tX, tY] = project(t[0], t[1], t[2], cx, cy, scale);
+  if (showTruth) {
+    ctx.fillStyle = colorTruth;
+    ctx.beginPath(); ctx.arc(tX, tY, 3, 0, Math.PI*2); ctx.fill();
+  }
+  if (showPred) {
+    const p = px(segment, k, norm, 'p');
+    const [pX, pY] = project(p[0], p[1], p[2], cx, cy, scale);
+    ctx.fillStyle = colorPred;
+    ctx.beginPath(); ctx.arc(pX, pY, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Return current absolute coords for footer stats
+  return {
+    truth: [segment.tx[k] + 0, segment.ty[k] + 0, segment.tz[k] + 0],
+    pred:  [segment.px[k] + 0, segment.py[k] + 0, segment.pz[k] + 0],
+    headIdx: k,
+  };
+}
+
+/* ============================================================
+   Live CDF (real data, scaled by playback progress)
+   ============================================================ */
+let cachedSortedErrors = null; // Float64Array
+let cachedSortedFor = -1;       // n_seen the cache was built for
+
+function drawCDF(canvas, nSeen, p95Out) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const padL = 44, padR = 18, padT = 36, padB = 34;
+  const X0 = padL, Y0 = padT, W = w - padL - padR, H = h - padT - padB;
+
+  // grid
+  ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const yy = Y0 + (H * i) / 4;
+    ctx.beginPath(); ctx.moveTo(X0, yy); ctx.lineTo(X0+W, yy); ctx.stroke();
+  }
+  for (let i = 0; i <= 6; i++) {
+    const xx = X0 + (W * i) / 6;
+    ctx.beginPath(); ctx.moveTo(xx, Y0); ctx.lineTo(xx, Y0+H); ctx.stroke();
+  }
+
+  // Determine x-axis range from full data (matches Python: 99.5 percentile * 1.1)
+  let xMax = 1.0;
+  if (fullErrors && fullErrors.length > 0) {
+    // Compute 99.5 percentile via Quickselect-ish sort of a copy (cached)
+    if (!cachedSortedErrors || cachedSortedErrors.length !== fullErrors.length) {
+      cachedSortedErrors = fullErrors.slice();
+      cachedSortedErrors.sort();
+    }
+    const idx995 = Math.min(cachedSortedErrors.length - 1, Math.floor(0.995 * cachedSortedErrors.length));
+    xMax = Math.max(0.001, cachedSortedErrors[idx995] * 1.1);
+  }
+
+  // y/x labels
+  ctx.fillStyle = COLORS.ink3;
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const yy = Y0 + (H * i) / 4;
+    ctx.fillText((1 - i/4).toFixed(2), X0 - 8, yy + 3);
+  }
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= 6; i++) {
+    const xx = X0 + (W * i) / 6;
+    ctx.fillText((xMax * i/6).toFixed(2), xx, Y0 + H + 16);
+  }
+  ctx.fillStyle = COLORS.ink2;
+  ctx.font = '500 10px Inter, sans-serif';
+  ctx.fillText('Position error (m)', X0 + W/2, Y0 + H + 30);
+  ctx.save();
+  ctx.translate(X0 - 30, Y0 + H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('CDF', 0, 0);
+  ctx.restore();
+
+  // 95% guideline
+  ctx.strokeStyle = COLORS.guide;
+  ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+  const y95 = Y0 + H * (1 - 0.95);
+  ctx.beginPath(); ctx.moveTo(X0, y95); ctx.lineTo(X0+W, y95); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COLORS.ink3; ctx.font = '9px JetBrains Mono, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('95%', X0 + 4, y95 - 3);
+
+  if (!fullErrors || nSeen <= 0) {
+    // frame only
+    ctx.strokeStyle = COLORS.gridStrong; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H); ctx.stroke();
+    return;
+  }
+
+  // Build sorted subset of [:nSeen]
+  const seen = fullErrors.subarray(0, nSeen);
+  // For speed: subsample to 4000 points along sorted axis
+  let sorted;
+  if (seen.length > 4000) {
+    sorted = seen.slice();
+    sorted.sort();
+  } else {
+    sorted = seen.slice();
+    sorted.sort();
+  }
+
+  // p95
+  const p95Idx = Math.min(sorted.length - 1, Math.floor(0.95 * sorted.length));
+  const p95 = sorted[p95Idx];
+  if (p95Out) p95Out.value = p95;
+
+  const N = sorted.length;
+  const drawN = Math.min(N, 800);
+  const stride = Math.max(1, Math.floor(N / drawN));
+
+  // fill
+  ctx.fillStyle = COLORS.accentDim;
+  ctx.beginPath();
+  ctx.moveTo(X0, Y0 + H);
+  let lastX = X0, lastY = Y0 + H;
+  for (let i = 0; i < N; i += stride) {
+    const v = sorted[i];
+    const f = (i + 1) / N;
+    const X = X0 + Math.min(1, v / xMax) * W;
+    const Y = Y0 + (1 - f) * H;
+    ctx.lineTo(X, Y);
+    lastX = X; lastY = Y;
+  }
+  ctx.lineTo(lastX, Y0 + H);
+  ctx.closePath();
+  ctx.fill();
+
+  // line
+  ctx.save();
+  ctx.shadowColor = COLORS.accent; ctx.shadowBlur = 8;
+  ctx.strokeStyle = COLORS.accent; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  let first = true;
+  for (let i = 0; i < N; i += stride) {
+    const v = sorted[i];
+    const f = (i + 1) / N;
+    const X = X0 + Math.min(1, v / xMax) * W;
+    const Y = Y0 + (1 - f) * H;
+    if (first) { ctx.moveTo(X, Y); first = false; } else ctx.lineTo(X, Y);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // p95 marker
+  const X95 = X0 + Math.min(1, p95 / xMax) * W;
+  ctx.strokeStyle = '#F87171'; ctx.setLineDash([4,3]); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X95, Y0); ctx.lineTo(X95, Y0+H); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // frame
+  ctx.strokeStyle = COLORS.gridStrong; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H);
+  ctx.stroke();
+}
+
+/* ============================================================
+   Live MAE bars (real data, scaled by playback progress)
+   ============================================================ */
+function drawBars(canvas, nSeen, maeOut) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const padL = 44, padR = 18, padT = 36, padB = 38;
+  const X0 = padL, Y0 = padT, W = w - padL - padR, H = h - padT - padB;
+
+  // Compute MAE so far
+  let mae = [0, 0, 0];
+  if (fullAbs && nSeen > 0) {
+    let sx = 0, sy = 0, sz = 0;
+    for (let i = 0; i < nSeen; i++) { sx += fullAbs.ex[i]; sy += fullAbs.ey[i]; sz += fullAbs.ez[i]; }
+    mae = [sx / nSeen, sy / nSeen, sz / nSeen];
+  }
+  if (maeOut) maeOut.value = mae;
+
+  // y-axis max — Python uses 2× of max-mae of full set; mimic with overall max
+  let yMax = 1.0;
+  if (fullAbs && fullAbs.ex.length > 0) {
+    let mx = 0, my = 0, mz = 0;
+    const NF = fullAbs.ex.length;
+    for (let i = 0; i < NF; i++) { mx += fullAbs.ex[i]; my += fullAbs.ey[i]; mz += fullAbs.ez[i]; }
+    const allMax = Math.max(mx/NF, my/NF, mz/NF);
+    yMax = Math.max(0.001, allMax * 2.0 + 0.01);
+  }
+
+  // grid
+  ctx.strokeStyle = COLORS.grid;
+  for (let i = 0; i <= 4; i++) {
+    const yy = Y0 + (H*i)/4;
+    ctx.beginPath(); ctx.moveTo(X0, yy); ctx.lineTo(X0+W, yy); ctx.stroke();
+  }
+  ctx.fillStyle = COLORS.ink3;
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const yy = Y0 + (H*i)/4;
+    ctx.fillText((yMax * (1 - i/4)).toFixed(3), X0 - 8, yy + 3);
+  }
+
+  const labels = ['X (Lon)', 'Y (Lat)', 'Z (Alt)'];
+  const colors = [COLORS.accent, COLORS.accent, COLORS.accent];
+  const groupW = W / labels.length;
+  const barW = Math.min(56, groupW * 0.5);
+
+  labels.forEach((label, gi) => {
+    const cx0 = X0 + groupW*gi + groupW/2;
+    const v = mae[gi];
+    const color = colors[gi];
+    const bh = (v / yMax) * H;
+    const bx = cx0 - barW/2;
+    const by = Y0 + H - bh;
+
+    ctx.save();
+    const grad = ctx.createLinearGradient(0, by, 0, Y0+H);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, color + '55');
+    ctx.fillStyle = grad;
+    ctx.shadowColor = color; ctx.shadowBlur = 8;
+    const r = Math.min(4, barW/2);
+    ctx.beginPath();
+    ctx.moveTo(bx, by + r);
+    ctx.quadraticCurveTo(bx, by, bx + r, by);
+    ctx.lineTo(bx + barW - r, by);
+    ctx.quadraticCurveTo(bx + barW, by, bx + barW, by + r);
+    ctx.lineTo(bx + barW, Y0 + H);
+    ctx.lineTo(bx, Y0 + H);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    if (bh > 14) {
+      ctx.fillStyle = COLORS.ink;
+      ctx.font = '600 11px JetBrains Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(v.toFixed(3), bx + barW/2, by - 6);
+    }
+    ctx.fillStyle = COLORS.ink2;
+    ctx.font = '600 12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx0, Y0 + H + 18);
+  });
+
+  ctx.fillStyle = COLORS.ink2;
+  ctx.font = '500 10px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Axis', X0 + W/2, Y0 + H + 32);
+  ctx.save();
+  ctx.translate(X0 - 30, Y0 + H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('MAE (m)', 0, 0);
+  ctx.restore();
+
+  ctx.strokeStyle = COLORS.gridStrong;
+  ctx.beginPath();
+  ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H);
+  ctx.stroke();
+}
+
+/* ============================================================
+   KPI / footer updates
+   ============================================================ */
+const cvLinear  = document.getElementById('cvLinear');
+const cvComplex = document.getElementById('cvComplex');
+const cvCdf     = document.getElementById('cvCdf');
+const cvBars    = document.getElementById('cvBars');
+
+const kpiStep  = document.getElementById('kpiStep');
+const kpiErr   = document.getElementById('kpiErr');
+const kpiP95   = document.getElementById('kpiP95');
+
+function fmtMeters(v) { return (isFinite(v) ? v : 0).toFixed(3) + ' m'; }
+
+function drawAll() {
+  if (viewMode === 'multi') { drawAllMulti(); return; }
+  // 3D panels
+  const r1 = drawPath3D(cvLinear,  linSeg, step,
+    visibility.linear.truth, visibility.linear.pred,
+    COLORS.truth, COLORS.pred);
+  const r2 = drawPath3D(cvComplex, cpxSeg, step,
+    visibility.complex.truth, visibility.complex.pred,
+    COLORS.truth, COLORS.pred);
+
+  // CDF + MAE — scaled by playback progress, like Python's frac = (cur_step+1)/max_len
+  const m = maxSegLen();
+  let nSeen = 0;
+  if (DATA && DATA.n > 0 && m > 0) {
+    const curStep = Math.min(step, m - 1);
+    const frac = (curStep + 1) / m;
+    nSeen = Math.max(1, Math.round(frac * DATA.n));
+  }
+  const p95Out = { value: 0 };
+  const maeOut = { value: [0,0,0] };
+  drawCDF(cvCdf, nSeen, p95Out);
+  drawBars(cvBars, nSeen, maeOut);
+
+  // Current point's euclidean error (from full CSV, at raw row = first-step-row * FH)
+  let curErr = 0;
+  if (DATA && fullErrors && fullErrors.length > 0) {
+    // Determine which segment the current step belongs to (prefer linear, fall back to complex)
+    const linLen = linSeg ? linSeg.n : 0;
+    const cpxLen = cpxSeg ? cpxSeg.n : 0;
+    const kLin = linLen > 0 ? Math.min(step, linLen - 1) : -1;
+    const kCpx = cpxLen > 0 ? Math.min(step, cpxLen - 1) : -1;
+    let row = 0;
+    if (kLin >= 0) row = linSlice[0] + kLin;
+    else if (kCpx >= 0) row = cpxSlice[0] + kCpx;
+    const rawRow = Math.min(row * curFH, fullErrors.length - 1);
+    curErr = fullErrors[rawRow];
+  }
+
+  // mean / median so far (over n_seen)
+  let mean = 0, median = 0;
+  if (fullErrors && nSeen > 0) {
+    let s = 0;
+    for (let i = 0; i < nSeen; i++) s += fullErrors[i];
+    mean = s / nSeen;
+    // median: use cached sorted of seen prefix — cheap O(n log n) on small slices, big slices skip resorting
+    // To avoid resorting every frame, approximate using the precomputed cachedSortedErrors prefix index.
+    // Since cachedSortedErrors is sorted over the FULL array, taking element at nSeen/2 doesn't give median of prefix.
+    // Instead, copy & sort the seen prefix only when nSeen <= 50000; else approximate with full median.
+    if (nSeen <= 50000) {
+      const tmp = fullErrors.slice(0, nSeen);
+      tmp.sort();
+      median = tmp[Math.floor(tmp.length / 2)];
+    } else if (cachedSortedErrors) {
+      median = cachedSortedErrors[Math.floor(cachedSortedErrors.length / 2)];
+    }
+  }
+
+  // KPIs
+  if (kpiStep) kpiStep.textContent = (m > 0 ? `${Math.min(step+1, m).toLocaleString()} / ${m.toLocaleString()}` : '—');
+  if (kpiErr)  kpiErr.textContent  = fmtMeters(curErr);
+  if (kpiP95)  kpiP95.textContent  = fmtMeters(p95Out.value);
+
+  // Footer stats per panel
+  if (r1) {
+    // (footer stats removed by request)
+  }
+  if (r2) {
+    // (footer stats removed by request)
+  }
+
+  // Scrubber
+  const frac = (m > 0) ? Math.min(1, (step) / Math.max(1, m - 1)) : 0;
+  scrubFill.style.width  = (frac*100) + '%';
+  scrubThumb.style.left  = (frac*100) + '%';
+  timeNow.textContent    = (m > 0) ? `${Math.min(step+1, m).toLocaleString()} / ${m.toLocaleString()}` : '0 / 0';
+  timeEnd.textContent    = (m > 0) ? m.toLocaleString() : '0';
+
+  // Live metrics rows
+  const maeAxes = maeOut.value;
+  const maxAxis = Math.max(0.001, Math.max(...maeAxes));
+  const errRef = Math.max(0.001, p95Out.value || maxAxis);
+  const rowValues = {
+    mae_x:   { value: fmtMeters(maeAxes[0]), frac: Math.min(1, maeAxes[0] / maxAxis) },
+    mae_y:   { value: fmtMeters(maeAxes[1]), frac: Math.min(1, maeAxes[1] / maxAxis) },
+    mae_z:   { value: fmtMeters(maeAxes[2]), frac: Math.min(1, maeAxes[2] / maxAxis) },
+    mean:    { value: fmtMeters(mean),       frac: Math.min(1, mean   / errRef) },
+    median:  { value: fmtMeters(median),     frac: Math.min(1, median / errRef) },
+    samples: { value: nSeen.toLocaleString(),frac: (DATA && DATA.n) ? nSeen / DATA.n : 0 },
+  };
+  renderMetricRows(rowValues);
+}
+
+/* ============================================================
+   Animation loop
+   ============================================================ */
+let needsRedraw = true;
+function markRedraw() { needsRedraw = true; }
+function frame() {
+  let stepChanged = false;
+  if (playing && (firstStep || (viewMode === 'multi' && loadedTests.length))) {
+    const m = maxSegLen();
+    if (m > 1) {
+      const newStep = Math.min(m - 1, step + currentSpeed());
+      if (newStep !== step) { step = newStep; stepChanged = true; }
+      if (newStep >= m - 1) {
+        // Stop at end (no looping, matches Python)
+        playing = false;
+        setPlayingUi(false);
+        stepChanged = true;
+      }
+    }
+  }
+  if (stepChanged || needsRedraw) {
+    needsRedraw = false;
+    drawAll();
+  }
+  frameIdx++;
+  requestAnimationFrame(frame);
+}
+setPlayingUi(false);
+
+/* ============================================================
+   Theme toggle
+   ============================================================ */
+const themeToggle = document.getElementById('themeToggle');
+function applyTheme(theme, animate) {
+  if (theme === 'light') document.body.classList.add('light');
+  else                    document.body.classList.remove('light');
+  if (animate) {
+    document.querySelectorAll('.panel-canvas').forEach(c => { c.style.opacity = '0.25'; });
+    setTimeout(() => {
+      refreshThemeColors();
+      drawAll();
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.panel-canvas').forEach(c => { c.style.opacity = '1'; });
+      });
+    }, 220);
+  } else {
+    refreshThemeColors();
+    drawAll();
+  }
+}
+const savedTheme = localStorage.getItem('dashboardTheme') || 'dark';
+applyTheme(savedTheme, false);
+themeToggle.addEventListener('click', () => {
+  const next = document.body.classList.contains('light') ? 'dark' : 'light';
+  localStorage.setItem('dashboardTheme', next);
+  applyTheme(next, true);
+});
+
+/* ============================================================
+   ============================================================
+   MULTI-TEST COMPARISON MODE
+   ============================================================
+   ============================================================ */
+const viewModeToggle      = document.getElementById('viewModeToggle');
+const singleTestSelection = document.getElementById('singleTestSelection');
+const multiTestSelection  = document.getElementById('multiTestSelection');
+const multiCountSelect    = document.getElementById('multiCountSelect');
+const multiSlotsEl        = document.getElementById('multiSlots');
+
+/* ---- slot card UI ---- */
+function buildSlotMarkup(i) {
+  return `
+  <div class="slot-card" data-slot="${i}" style="--slot-color: ${slotColor(i)}">
+    <div class="slot-head">
+      <div class="slot-title">
+        <span class="slot-color-chip"></span>
+        Test ${i+1}
+      </div>
+    </div>
+    <div class="slot-body">
+      <div>
+        <div class="section-label">Test type</div>
+        <select class="select slot-test-type">
+          <option value="Baseline" selected>Baseline</option>
+          <option value="Remove Tests">Remove Tests</option>
+          <option value="Hyperparameter">Hyperparameter</option>
+        </select>
+      </div>
+      <div class="slot-remove" style="display:none; flex-direction:column; gap:8px;">
+        <div>
+          <div class="section-label">Features removed</div>
+          <select class="select slot-feat-removed"></select>
+        </div>
+        <div>
+          <div class="section-label">Available test</div>
+          <select class="select slot-remove-test"></select>
+        </div>
+      </div>
+      <div class="slot-hyper" style="display:none; flex-direction:column; gap:8px;">
+        <div>
+          <div class="section-label">WS / FH set</div>
+          <select class="select slot-wsfh"></select>
+        </div>
+        <div>
+          <div class="section-label">Available model</div>
+          <select class="select slot-model"></select>
+        </div>
+      </div>
+      <div class="slot-baseline slot-baseline-note">Baseline configuration · all 20 features active, default FH = 30 / WS = 90, reference model.</div>
+    </div>
+  </div>`;
+}
+
+function refreshSlotColors() {
+  multiSlotsEl.querySelectorAll('.slot-card').forEach((card, i) => {
+    card.style.setProperty('--slot-color', slotColor(i));
+  });
+}
+
+function buildSlots() {
+  multiSlotsEl.innerHTML = '';
+  for (let i = 0; i < multiCount; i++) {
+    multiSlotsEl.insertAdjacentHTML('beforeend', buildSlotMarkup(i));
+  }
+  multiSlotsEl.querySelectorAll('.slot-card').forEach(card => wireSlot(card));
+  refreshSlotColors();
+}
+
+function wireSlot(card) {
+  const typeSel       = card.querySelector('.slot-test-type');
+  const removeBox     = card.querySelector('.slot-remove');
+  const hyperBox      = card.querySelector('.slot-hyper');
+  const baseBox       = card.querySelector('.slot-baseline');
+  const featSel       = card.querySelector('.slot-feat-removed');
+  const removeTestSel = card.querySelector('.slot-remove-test');
+  const wsFhSel       = card.querySelector('.slot-wsfh');
+  const modelSel      = card.querySelector('.slot-model');
+
+  fillOptions(featSel, Object.keys(TESTS["Remove Tests"]).sort(naturalCmp));
+  fillOptions(wsFhSel, Object.keys(TESTS.Hyperparameter).sort(naturalCmp));
+  refreshRemoveTestsFor(card);
+  refreshHyperModelsFor(card);
+
+  const applyType = (t) => {
+    removeBox.style.display = (t === 'Remove Tests')   ? 'flex' : 'none';
+    hyperBox.style.display  = (t === 'Hyperparameter') ? 'flex' : 'none';
+    baseBox.style.display   = (t === 'Baseline')       ? 'block': 'none';
+  };
+  applyType(typeSel.value);
+  typeSel.addEventListener('change', () => { applyType(typeSel.value); markSelectionChanged(); });
+  featSel.addEventListener('change', () => { refreshRemoveTestsFor(card); markSelectionChanged(); });
+  removeTestSel.addEventListener('change', markSelectionChanged);
+  wsFhSel.addEventListener('change', () => { refreshHyperModelsFor(card); markSelectionChanged(); });
+  modelSel.addEventListener('change', markSelectionChanged);
+}
+
+function refreshRemoveTestsFor(card) {
+  const cnt = card.querySelector('.slot-feat-removed').value;
+  const tests = Object.keys(TESTS["Remove Tests"][cnt] || {}).sort(naturalCmp);
+  fillOptions(card.querySelector('.slot-remove-test'), tests);
+}
+function refreshHyperModelsFor(card) {
+  const cfg = card.querySelector('.slot-wsfh').value;
+  const models = Object.keys(TESTS.Hyperparameter[cfg] || {}).sort(naturalCmp);
+  fillOptions(card.querySelector('.slot-model'), models);
+}
+
+function getSlotSelection(card) {
+  const t = card.querySelector('.slot-test-type').value;
+  if (t === 'Baseline') {
+    return { type: 'Baseline', path: TESTS.Baseline.default.Baseline, fh: DEFAULT_FH, label: 'Baseline' };
+  }
+  if (t === 'Remove Tests') {
+    const cnt = card.querySelector('.slot-feat-removed').value;
+    const test = card.querySelector('.slot-remove-test').value;
+    const path = (TESTS["Remove Tests"][cnt] || {})[test];
+    return { type: 'Remove Tests', cnt, test, path, fh: DEFAULT_FH, label: `Remove ${cnt}: ${test}` };
+  }
+  const cfg = card.querySelector('.slot-wsfh').value;
+  const model = card.querySelector('.slot-model').value;
+  const path = (TESTS.Hyperparameter[cfg] || {})[model];
+  return { type: 'Hyperparameter', cfg, model, path, fh: fhFromLabel(cfg), label: `${cfg} · ${model}` };
+}
+
+/* ---- per-test CSV loader (used by single + multi) ---- */
+async function loadOneTest(sel) {
+  const text = await fetchCsv(sel.path);
+  const parsed = parseTrajectoryCsv(text);
+  const fh = Math.max(1, sel.fh || DEFAULT_FH);
+  const fs = extractFirstStep(parsed, fh);
+  const fullErr = parsed.err.slice(0, parsed.n);
+  const ex = new Float64Array(parsed.n);
+  const ey = new Float64Array(parsed.n);
+  const ez = new Float64Array(parsed.n);
+  for (let i = 0; i < parsed.n; i++) {
+    ex[i] = Math.abs(parsed.px[i] - parsed.tx[i]) * M_PER_DEG_LON;
+    ey[i] = Math.abs(parsed.py[i] - parsed.ty[i]) * M_PER_DEG_LAT;
+    ez[i] = Math.abs(parsed.pz[i] - parsed.tz[i]);
+  }
+  const fullA = { ex, ey, ez };
+  const clampSlice = (slice) => {
+    const n = fs.n;
+    const s = Math.max(0, Math.min(Math.floor(slice[0]), n));
+    const e = Math.max(s, Math.min(Math.floor(slice[1]), n));
+    return [s, e];
+  };
+  const lin = buildSegment(fs, clampSlice(DEFAULT_LINEAR_SLICE));
+  const cpx = buildSegment(fs, clampSlice(DEFAULT_COMPLEX_SLICE));
+
+  // === precomputed caches for fast per-frame multi-mode rendering ===
+  const N = parsed.n;
+  const prefEx  = new Float64Array(N + 1);
+  const prefEy  = new Float64Array(N + 1);
+  const prefEz  = new Float64Array(N + 1);
+  const prefErr = new Float64Array(N + 1);
+  for (let i = 0; i < N; i++) {
+    prefEx[i+1]  = prefEx[i]  + ex[i];
+    prefEy[i+1]  = prefEy[i]  + ey[i];
+    prefEz[i+1]  = prefEz[i]  + ez[i];
+    prefErr[i+1] = prefErr[i] + fullErr[i];
+  }
+  const fullMaeMax = N > 0
+    ? Math.max(prefEx[N], prefEy[N], prefEz[N]) / N
+    : 0;
+  // Full-set sorted errors → used for x-axis 99.5%-ile and median fallback.
+  const fullSorted = fullErr.slice();
+  fullSorted.sort();
+  const x995 = fullSorted.length
+    ? fullSorted[Math.min(fullSorted.length - 1, Math.floor(0.995 * fullSorted.length))]
+    : 0;
+
+  return {
+    data: parsed, firstStep: fs, linSeg: lin, cpxSeg: cpx,
+    fullErrors: fullErr, fullAbs: fullA, curFH: fh,
+    label: sel.label, selection: sel,
+    prefEx, prefEy, prefEz, prefErr,
+    fullMaeMax, fullSorted, x995,
+  };
+}
+
+/* ---- multi load orchestration ---- */
+async function loadSelectedMulti() {
+  const cards = [...multiSlotsEl.querySelectorAll('.slot-card')];
+  const sels = cards.map(getSlotSelection);
+  if (sels.some(s => !s.path)) {
+    loadTestLabel.textContent = 'NO FILE';
+    setTimeout(() => { loadTestLabel.textContent = 'LOAD TEST'; }, 1500);
+    return;
+  }
+  const myToken = ++loadToken;
+  loadTestBtn.classList.remove('done');
+  loadTestBtn.classList.add('loading');
+  loadTestLabel.textContent = 'LOADING…';
+  playing = false;
+  try {
+    const loaded = await Promise.all(sels.map(loadOneTest));
+    if (myToken !== loadToken) return;
+    loadedTests = loaded.map((t, i) => ({ ...t, color: slotColor(i) }));
+    // Mirror primary into globals so any single-mode code paths stay valid.
+    const p = loadedTests[0];
+    DATA = p.data; firstStep = p.firstStep;
+    linSeg = p.linSeg; cpxSeg = p.cpxSeg;
+    fullErrors = p.fullErrors; fullAbs = p.fullAbs;
+    curFH = p.curFH;
+    step = 0; frameIdx = 0;
+    cdfNLabel.textContent = `n = ${loadedTests.map(t => t.data.n.toLocaleString()).join(' · ')}`;
+
+    loadTestBtn.classList.remove('loading');
+    loadTestBtn.classList.add('done');
+    loadTestLabel.textContent = 'LOADED';
+    updateModelInfoMulti();
+
+    playing = false;
+    setPlayingUi(false);
+    needsRedraw = true;
+  } catch (e) {
+    console.error("Multi load failed", e);
+    loadTestBtn.classList.remove('loading');
+    loadTestLabel.textContent = 'LOAD FAILED';
+    setTimeout(() => { loadTestLabel.textContent = 'LOAD TEST'; }, 2000);
+  }
+}
+
+/* ---- multi draws ---- */
+function drawAllMulti() {
+  drawPath3DMulti(cvLinear,  'lin');
+  drawPath3DMulti(cvComplex, 'cpx');
+  drawCDFMulti(cvCdf);
+  drawBarsMulti(cvBars);
+  renderMetricRowsMulti();
+
+  // Scrubber + footer
+  const m = maxSegLen();
+  const frac = (m > 0) ? Math.min(1, step / Math.max(1, m - 1)) : 0;
+  scrubFill.style.width  = (frac*100) + '%';
+  scrubThumb.style.left  = (frac*100) + '%';
+  timeNow.textContent    = (m > 0) ? `${Math.min(step+1, m).toLocaleString()} / ${m.toLocaleString()}` : '0 / 0';
+  timeEnd.textContent    = (m > 0) ? m.toLocaleString() : '0';
+}
+
+function drawPath3DMulti(canvas, kind) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const cx = w * 0.5, cy = h * 0.52;
+  const scale = Math.min(w, h) * 0.30;
+  drawAxes(ctx, w, h, cx, cy, scale);
+  if (!loadedTests.length) return;
+
+  // Combined bounds across all tests
+  let mnx=+Infinity,mxx=-Infinity, mny=+Infinity,mxy=-Infinity, mnz=+Infinity,mxz=-Infinity;
+  const inc = (x,y,z) => {
+    if (x<mnx) mnx=x; if (x>mxx) mxx=x;
+    if (y<mny) mny=y; if (y>mxy) mxy=y;
+    if (z<mnz) mnz=z; if (z>mxz) mxz=z;
+  };
+  for (const t of loadedTests) {
+    const seg = (kind === 'lin') ? t.linSeg : t.cpxSeg;
+    if (!seg) continue;
+    for (let i = 0; i < seg.n; i++) {
+      inc(seg.tx[i], seg.ty[i], seg.tz[i]);
+      inc(seg.px[i], seg.py[i], seg.pz[i]);
+    }
+  }
+  if (!isFinite(mnx)) return;
+  const margin = 0.06;
+  const pad = (lo, hi) => { const r = hi-lo || 1; return [lo - r*margin, hi + r*margin]; };
+  const [xl,xh] = pad(mnx,mxx); const [yl,yh] = pad(mny,mxy); const [zl,zh] = pad(mnz,mxz);
+  const bounds = { xl,xh, yl,yh, zl,zh };
+  const norm = normalize(null, bounds);
+
+  // Shared ground truth (primary test)
+  const pri = loadedTests[0];
+  const priSeg = (kind === 'lin') ? pri.linSeg : pri.cpxSeg;
+  if (!priSeg || priSeg.n === 0) return;
+  const k = Math.max(0, Math.min(step, priSeg.n - 1));
+  const visKey = (kind === 'lin') ? 'linear' : 'complex';
+  const showTruth = visibility[visKey].truth !== false;
+
+  if (showTruth) {
+    // ghost full
+    ctx.save();
+    ctx.strokeStyle = COLORS.ghost; ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    for (let i = 0; i < priSeg.n; i++) {
+      const p = px(priSeg, i, norm, 't');
+      const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+      if (i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // live ground truth (red)
+    const idxs = trailIndices(k, TRAIL_CAP);
+    ctx.save();
+    ctx.strokeStyle = COLORS.truth; ctx.lineWidth = 2.4;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let n = 0; n < idxs.length; n++) {
+      const i = idxs[n];
+      const p = px(priSeg, i, norm, 't');
+      const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+      if (n===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    // GT head
+    const tPos = px(priSeg, k, norm, 't');
+    const [tX, tY] = project(tPos[0], tPos[1], tPos[2], cx, cy, scale);
+    ctx.fillStyle = COLORS.truth;
+    ctx.beginPath(); ctx.arc(tX, tY, 3, 0, Math.PI*2); ctx.fill();
+  }
+
+  // each test's predicted trail (respecting per-test visibility)
+  loadedTests.forEach((t, idx) => {
+    if (visibility[visKey].tests && visibility[visKey].tests[idx] === false) return;
+    const seg = (kind === 'lin') ? t.linSeg : t.cpxSeg;
+    if (!seg || seg.n === 0) return;
+    const kk = Math.max(0, Math.min(step, seg.n - 1));
+    const ii = trailIndices(kk, TRAIL_CAP);
+    const color = slotColor(idx);
+    ctx.save();
+    ctx.strokeStyle = color; ctx.lineWidth = 2.0;
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let n = 0; n < ii.length; n++) {
+      const i = ii[n];
+      const p = px(seg, i, norm, 'p');
+      const [X,Y] = project(p[0],p[1],p[2],cx,cy,scale);
+      if (n===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+    const pPos = px(seg, kk, norm, 'p');
+    const [pX, pY] = project(pPos[0], pPos[1], pPos[2], cx, cy, scale);
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.arc(pX, pY, 2.5, 0, Math.PI*2); ctx.fill();
+  });
+}
+
+function drawCDFMulti(canvas) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const padL = 44, padR = 18, padT = 36, padB = 34;
+  const X0 = padL, Y0 = padT, W = w - padL - padR, H = h - padT - padB;
+  ctx.strokeStyle = COLORS.grid; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const yy = Y0 + (H * i) / 4; ctx.beginPath(); ctx.moveTo(X0, yy); ctx.lineTo(X0+W, yy); ctx.stroke(); }
+  for (let i = 0; i <= 6; i++) { const xx = X0 + (W * i) / 6; ctx.beginPath(); ctx.moveTo(xx, Y0); ctx.lineTo(xx, Y0+H); ctx.stroke(); }
+
+  const hasData = loadedTests.length > 0;
+  const m = maxSegLen();
+  const frac = (m > 0) ? Math.min(1, (Math.min(step, m-1) + 1) / m) : 0;
+
+  // xMax = max 99.5%-ile across tests — use cached value (computed once on load).
+  let xMax = 1.0;
+  if (hasData) {
+    xMax = 0.001;
+    for (const t of loadedTests) {
+      const v = (t.x995 || 0) * 1.1;
+      if (v > xMax) xMax = v;
+    }
+  }
+
+  ctx.fillStyle = COLORS.ink3; ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) { const yy = Y0 + (H * i) / 4; ctx.fillText((1 - i/4).toFixed(2), X0 - 8, yy + 3); }
+  ctx.textAlign = 'center';
+  for (let i = 0; i <= 6; i++) { const xx = X0 + (W * i) / 6; ctx.fillText((xMax * i/6).toFixed(2), xx, Y0 + H + 16); }
+  ctx.fillStyle = COLORS.ink2; ctx.font = '500 10px Inter, sans-serif';
+  ctx.fillText('Position error (m)', X0 + W/2, Y0 + H + 30);
+  ctx.save(); ctx.translate(X0 - 30, Y0 + H/2); ctx.rotate(-Math.PI/2); ctx.fillText('CDF', 0, 0); ctx.restore();
+
+  // 95% guideline
+  ctx.strokeStyle = COLORS.guide; ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+  const y95 = Y0 + H * (1 - 0.95);
+  ctx.beginPath(); ctx.moveTo(X0, y95); ctx.lineTo(X0+W, y95); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = COLORS.ink3; ctx.font = '9px JetBrains Mono, monospace';
+  ctx.textAlign = 'left'; ctx.fillText('95%', X0 + 4, y95 - 3);
+
+  if (!hasData) {
+    ctx.strokeStyle = COLORS.gridStrong; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H); ctx.stroke();
+    return;
+  }
+
+  loadedTests.forEach((t, idx) => {
+    const color = slotColor(idx);
+    const N = t.data.n;
+    const nSeen = Math.max(1, Math.round(frac * N));
+    // Subsample (≤4000 points) BEFORE sorting — keeps the curve visually identical
+    // while collapsing each per-frame sort from O(N log N) on N=50k+ to ~4k log 4k.
+    const SUBSAMPLE = 4000;
+    let sorted;
+    if (nSeen <= SUBSAMPLE) {
+      sorted = t.fullErrors.subarray(0, nSeen).slice();
+    } else {
+      sorted = new Float64Array(SUBSAMPLE);
+      const stride = nSeen / SUBSAMPLE;
+      for (let i = 0; i < SUBSAMPLE; i++) sorted[i] = t.fullErrors[Math.floor(i * stride)];
+    }
+    sorted.sort();
+    const NN = sorted.length;
+    const drawN = Math.min(NN, 800);
+    const stride = Math.max(1, Math.floor(NN / drawN));
+    ctx.save();
+    ctx.shadowColor = color; ctx.shadowBlur = 6;
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    let first = true;
+    for (let i = 0; i < NN; i += stride) {
+      const v = sorted[i];
+      const f = (i + 1) / NN;
+      const X = X0 + Math.min(1, v / xMax) * W;
+      const Y = Y0 + (1 - f) * H;
+      if (first) { ctx.moveTo(X, Y); first = false; } else ctx.lineTo(X, Y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  ctx.strokeStyle = COLORS.gridStrong; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H); ctx.stroke();
+}
+
+function drawBarsMulti(canvas) {
+  const { ctx, w, h } = fitCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const padL = 44, padR = 18, padT = 36, padB = 38;
+  const X0 = padL, Y0 = padT, W = w - padL - padR, H = h - padT - padB;
+
+  const hasData = loadedTests.length > 0;
+  const m = maxSegLen();
+  const frac = (m > 0) ? Math.min(1, (Math.min(step, m-1) + 1) / m) : 0;
+
+  // Per-test MAE (current) — O(1) via prefix sums.
+  const maePerTest = hasData ? loadedTests.map(t => {
+    const nSeen = Math.max(1, Math.round(frac * t.data.n));
+    return [
+      t.prefEx[nSeen] / nSeen,
+      t.prefEy[nSeen] / nSeen,
+      t.prefEz[nSeen] / nSeen,
+    ];
+  }) : [];
+  // Combined yMax = 2× max over all tests' full-set MAE (precomputed on load).
+  const yMax = hasData
+    ? Math.max(0.001, Math.max(...loadedTests.map(t => t.fullMaeMax || 0)) * 2.0 + 0.01)
+    : 1.0;
+
+  ctx.strokeStyle = COLORS.grid;
+  for (let i = 0; i <= 4; i++) { const yy = Y0 + (H*i)/4; ctx.beginPath(); ctx.moveTo(X0, yy); ctx.lineTo(X0+W, yy); ctx.stroke(); }
+  ctx.fillStyle = COLORS.ink3; ctx.font = '10px JetBrains Mono, monospace'; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) { const yy = Y0 + (H*i)/4; ctx.fillText((yMax * (1 - i/4)).toFixed(3), X0 - 8, yy + 3); }
+
+  const labels = ['X (Lon)', 'Y (Lat)', 'Z (Alt)'];
+  const groupW = W / labels.length;
+
+  // Always draw axis labels so the empty plot stays readable.
+  labels.forEach((label, gi) => {
+    const cx0 = X0 + groupW*gi + groupW/2;
+    ctx.fillStyle = COLORS.ink2; ctx.font = '600 12px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(label, cx0, Y0 + H + 18);
+  });
+  ctx.fillStyle = COLORS.ink2; ctx.font = '500 10px Inter, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('Axis', X0 + W/2, Y0 + H + 32);
+  ctx.save(); ctx.translate(X0 - 30, Y0 + H/2); ctx.rotate(-Math.PI/2); ctx.fillText('MAE (m)', 0, 0); ctx.restore();
+  ctx.strokeStyle = COLORS.gridStrong;
+  ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X0, Y0+H); ctx.lineTo(X0+W, Y0+H); ctx.stroke();
+
+  if (!hasData) return;
+
+  const NT = loadedTests.length;
+  const totalBarW = Math.min(Math.min(140, groupW * 0.7), groupW * 0.85);
+  const gap = 3;
+  const barW = (totalBarW - gap * (NT - 1)) / NT;
+
+  labels.forEach((label, gi) => {
+    const cx0 = X0 + groupW*gi + groupW/2;
+    loadedTests.forEach((t, ti) => {
+      const v = maePerTest[ti][gi];
+      const color = slotColor(ti);
+      const bh = (v / yMax) * H;
+      const bx = cx0 - totalBarW/2 + ti * (barW + gap);
+      const by = Y0 + H - bh;
+      ctx.save();
+      const grad = ctx.createLinearGradient(0, by, 0, Y0+H);
+      grad.addColorStop(0, color);
+      grad.addColorStop(1, color + '55');
+      ctx.fillStyle = grad;
+      ctx.shadowColor = color; ctx.shadowBlur = 6;
+      const r = Math.min(3, barW/2);
+      ctx.beginPath();
+      ctx.moveTo(bx, by + r);
+      ctx.quadraticCurveTo(bx, by, bx + r, by);
+      ctx.lineTo(bx + barW - r, by);
+      ctx.quadraticCurveTo(bx + barW, by, bx + barW, by + r);
+      ctx.lineTo(bx + barW, Y0 + H);
+      ctx.lineTo(bx, Y0 + H);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    });
+  });
+}
+
+/* ---- multi metrics + info ---- */
+function renderMetricRowsMulti() {
+  if (!loadedTests.length) {
+    tbody.innerHTML = '<tr><td colspan="2" style="color: var(--ink-3); font-style: italic; padding: 8px 0;">No tests loaded.</td></tr>';
+    return;
+  }
+  const m = maxSegLen();
+  const frac = (m > 0) ? Math.min(1, (Math.min(step, m-1) + 1) / m) : 0;
+
+  const groups = loadedTests.map((t, idx) => {
+    const color = slotColor(idx);
+    const N = t.data.n;
+    const nSeen = Math.max(1, Math.round(frac * N));
+    // MAE & mean via O(1) prefix-sum lookups
+    const mae = [
+      t.prefEx[nSeen] / nSeen,
+      t.prefEy[nSeen] / nSeen,
+      t.prefEz[nSeen] / nSeen,
+    ];
+    const mean = t.prefErr[nSeen] / nSeen;
+    // Median: subsample to keep sort cheap; results are visually indistinguishable.
+    const MED_SUB = 5000;
+    let medSrc;
+    if (nSeen <= MED_SUB) {
+      medSrc = t.fullErrors.subarray(0, nSeen).slice();
+    } else {
+      medSrc = new Float64Array(MED_SUB);
+      const stride = nSeen / MED_SUB;
+      for (let i = 0; i < MED_SUB; i++) medSrc[i] = t.fullErrors[Math.floor(i * stride)];
+    }
+    medSrc.sort();
+    const median = medSrc[Math.floor(medSrc.length / 2)];
+    return { color, label: t.label, mae, mean, median, nSeen, total: N };
+  });
+  const allAxisMax = Math.max(0.001, ...groups.flatMap(g => g.mae));
+  const allErrMax  = Math.max(0.001, ...groups.flatMap(g => [g.mean, g.median]));
+
+  let html = '';
+  groups.forEach((g, idx) => {
+    html += `<tr><td colspan="2" style="padding: ${idx === 0 ? '0' : '12px'} 0 4px; border-bottom: none;"><div class="metric-group-head"><span class="metric-group-chip" style="--mg-color:${g.color}"></span><span style="color:var(--ink-2)">TEST ${idx+1}</span><span class="metric-group-label-name" style="color:var(--ink); margin-left:auto; font-size:10px;">${g.label}</span></div></td></tr>`;
+    const rows = [
+      ['MAE X',        fmtMeters(g.mae[0]), g.mae[0]/allAxisMax],
+      ['MAE Y',        fmtMeters(g.mae[1]), g.mae[1]/allAxisMax],
+      ['MAE Z',        fmtMeters(g.mae[2]), g.mae[2]/allAxisMax],
+      ['Mean error',   fmtMeters(g.mean),   g.mean/allErrMax],
+      ['Median error', fmtMeters(g.median), g.median/allErrMax],
+      ['Samples',      g.nSeen.toLocaleString(), g.nSeen/g.total],
+    ];
+    rows.forEach(([k, v, f]) => {
+      const fracPct = Math.max(0, Math.min(1, f || 0)) * 100;
+      html += `<tr><td><div class="cls">${k}</div><div class="metrics-bar"><i style="width:${fracPct.toFixed(1)}%; background:${g.color}; box-shadow:0 0 6px ${g.color};"></i></div></td><td class="val">${v}</td></tr>`;
+    });
+  });
+  tbody.innerHTML = html;
+}
+
+function updateModelInfoMulti() {
+  if (!loadedTests.length) {
+    modelInfoBody.innerHTML = '<div class="mi-empty" style="color: var(--ink-3); font-style: italic;">No tests loaded — select configurations and press LOAD TEST.</div>';
+    return;
+  }
+  let html = '';
+  loadedTests.forEach((t, idx) => {
+    const sel = t.selection;
+    const color = slotColor(idx);
+    const rows = [];
+    const row = (k, v) => `<div style="display:flex; justify-content:space-between; gap:10px;"><span style="color:var(--ink-3)">${k}</span><span class="mono" style="text-align:right; word-break: break-word;">${v}</span></div>`;
+    rows.push(row('Test type', sel.type));
+    if (sel.type === 'Baseline') {
+      rows.push(row('Configuration', 'Baseline (reference)'));
+      rows.push(row('Forecast horizon', '30'));
+      rows.push(row('Window size', '90'));
+      rows.push(row('Features removed', 'None'));
+    } else if (sel.type === 'Remove Tests') {
+      rows.push(row('Forecast horizon', '30'));
+      rows.push(row('Window size', '90'));
+      rows.push(row('Features removed', sel.cnt));
+      rows.push(row('Removed feature' + (sel.cnt === '1' ? '' : 's'), prettyFeat(sel.test)));
+    } else if (sel.type === 'Hyperparameter') {
+      const mm = sel.cfg.match(/FH\s*(\d+)\s*·\s*WS\s*(\d+)/);
+      rows.push(row('Forecast horizon', mm ? mm[1] : '—'));
+      rows.push(row('Window size', mm ? mm[2] : '—'));
+      if (sel.model === 'Baseline') {
+        rows.push(row('Variant', 'Baseline (all features)'));
+        rows.push(row('Features removed', '0'));
+      } else {
+        const fm = sel.model.match(/Best_(\d+)-Feat/);
+        rows.push(row('Variant', sel.model.replace(/_/g, ' ')));
+        rows.push(row('Features removed', (fm ? fm[1] : '?') + ' (best subset)'));
+      }
+    }
+    rows.push(row('Samples (rows)', t.data.n.toLocaleString()));
+    html += `<div class="test-info-group">
+      <div class="test-info-head"><span class="metric-group-chip" style="--mg-color:${color}"></span><span>TEST ${idx+1}</span><span class="metric-group-label-name" style="color:var(--ink); margin-left:auto;">${t.label}</span></div>
+      ${rows.join('')}
+    </div>`;
+  });
+  modelInfoBody.innerHTML = html;
+}
+
+/* ---- view-mode switch ---- */
+function applyViewMode() {
+  document.body.classList.toggle('multi', viewMode === 'multi');
+  if (viewMode === 'multi') {
+    singleTestSelection.style.display = 'none';
+    multiTestSelection.style.display  = 'block';
+    if (!multiSlotsEl.children.length) buildSlots();
+  } else {
+    singleTestSelection.style.display = 'block';
+    multiTestSelection.style.display  = 'none';
+  }
+  rebuildLegends();
+  // Clear loaded state on switch
+  loadedTests = [];
+  DATA = null; firstStep = null;
+  linSeg = null; cpxSeg = null;
+  fullErrors = null; fullAbs = null;
+  step = 0; frameIdx = 0;
+  playing = false; setPlayingUi(false);
+  loadTestBtn.classList.remove('done', 'loading');
+  loadTestLabel.textContent = 'LOAD TEST';
+  cdfNLabel.textContent = 'n = 0';
+  if (viewMode === 'multi') {
+    updateModelInfoMulti();
+    renderMetricRowsMulti();
+  } else {
+    updateModelInfo(null);
+    renderMetricRows({});
+  }
+  drawAll();
+}
+viewModeToggle.addEventListener('click', () => {
+  viewMode = (viewMode === 'single') ? 'multi' : 'single';
+  applyViewMode();
+});
+multiCountSelect.addEventListener('change', () => {
+  multiCount = +multiCountSelect.value;
+  buildSlots();
+  rebuildLegends();
+  markSelectionChanged();
+});
+// Refresh slot colors + redraw when theme flips (colors come from palette)
+const _origRefreshThemeColors = refreshThemeColors;
+refreshThemeColors = function() {
+  _origRefreshThemeColors();
+  refreshSlotColors();
+  // recolor loaded test markers
+  loadedTests.forEach((t, i) => { t.color = slotColor(i); });
+  rebuildLegends();
+};
+
+drawAll();
+requestAnimationFrame(frame);
+
+/* Auto-refit canvases when their bounding rect changes (mode switch,
+   panel expand/collapse, window resize, sidebar reflow). */
+const _canvasResizeObs = new ResizeObserver(() => { needsRedraw = true; });
+[cvLinear, cvComplex, cvCdf, cvBars].forEach(c => _canvasResizeObs.observe(c));
+
+/* Belt-and-braces: any expand/collapse click also marks a redraw, so even if
+   ResizeObserver hasn't fired yet (some browsers debounce), the next frame catches it. */
+document.querySelectorAll('main .panel').forEach(panel => {
+  panel.addEventListener('click', () => { needsRedraw = true; }, true);
+  const cb = panel.querySelector('.panel-collapse');
+  if (cb) cb.addEventListener('click', () => { needsRedraw = true; }, true);
+});
+
+/* re-fit on resize via the per-frame fitCanvas — no extra wiring needed */
+</script>
+
+</body>
+</html>

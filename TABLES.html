@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MT-TPI Thesis — Tables &amp; Figures</title>
+    <style>
+        :root {
+            --bg: #0f1419;
+            --panel: #1a2028;
+            --panel-2: #242b35;
+            --text: #e8eaed;
+            --text-dim: #9aa0a6;
+            --border: rgba(255, 255, 255, 0.08);
+            --accent: #00d9ff;
+            --better: #00ff88;
+            --worse: #ff6b6b;
+            --neutral: #ffd93d;
+            --baseline-bg: rgba(0, 217, 255, 0.08);
+            --optimal-bg: rgba(0, 255, 136, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2em;
+            margin: 0 0 8px 0;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        header .subtitle {
+            color: var(--text-dim);
+            font-size: 1em;
+        }
+
+        .section {
+            background: var(--panel);
+            border-radius: 10px;
+            padding: 28px 32px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .section-label {
+            display: inline-block;
+            font-size: 0.75em;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(0, 217, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.35em;
+            margin: 0 0 6px 0;
+            font-weight: 600;
+        }
+
+        .caption {
+            color: var(--text-dim);
+            font-size: 0.92em;
+            margin-bottom: 18px;
+            font-style: italic;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.94em;
+        }
+
+        thead th {
+            background: var(--panel-2);
+            color: var(--text);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .baseline-row {
+            background: var(--baseline-bg) !important;
+            font-weight: 600;
+        }
+
+        .optimal-row {
+            background: var(--optimal-bg) !important;
+        }
+
+        .better {
+            color: var(--better);
+        }
+
+        .worse {
+            color: var(--worse);
+        }
+
+        .neutral {
+            color: var(--neutral);
+        }
+
+        .figure-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 800px) {
+            .figure-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .figure {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .figure img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .figure figcaption {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.88em;
+            margin-top: 8px;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+            font-size: 0.88em;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+
+        .check {
+            color: var(--better);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .dash {
+            color: var(--text-dim);
+        }
+
+        /* Center numeric columns */
+        td.num,
+        th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        td.center,
+        th.center {
+            text-align: center;
+        }
+
+        .note {
+            background: rgba(0, 217, 255, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-top: 18px;
+            font-size: 0.9em;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>MT-TPI — Thesis Tables &amp; Figures</h1>
+            <div class="subtitle">Multi-Task Trajectory Prediction and Identification for UAVs — Results Summary</div>
+        </header>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 1: Dataset Feature Summary                                 -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 1</span>
+            <h2>Dataset multimodal feature set</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Unit / Representation</th>
+                            <th class="center">Dataset</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Wind Speed</td>
+                            <td>m/s</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Wind Angle</td>
+                            <td>degrees</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Battery Voltage</td>
+                            <td>V</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Battery Current</td>
+                            <td>A</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Longitude / Latitude (<em>x</em>, <em>y</em>)</td>
+                            <td>decimal degrees</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Altitude (<em>z</em>)</td>
+                            <td>m</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Orientation (quaternions)</td>
+                            <td><em>q<sub>x</sub>, q<sub>y</sub>, q<sub>z</sub>, q<sub>w</sub></em></td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Velocity (<em>v<sub>x</sub>, v<sub>y</sub>, v<sub>z</sub></em>)</td>
+                            <td>m/s</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Angular Velocity (<em>av<sub>x</sub>, av<sub>y</sub>, av<sub>z</sub></em>)</td>
+                            <td>rad/s</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Linear Acceleration (<em>a<sub>x</sub>, a<sub>y</sub>, a<sub>z</sub></em>)</td>
+                            <td>m/s²</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                        <tr>
+                            <td>Flight Mode (label)</td>
+                            <td>IDLE_HOVER / ASCEND / TURN / HMSL / DESCEND</td>
+                            <td class="center"><span class="check">✓</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 2: Baseline Euclidean Distance Error                       -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 2</span>
+            <h2>Average Euclidean distance error for trajectory prediction</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction time</th>
+                            <th class="num">Euclidean error (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><em>t</em> + 1.0 s</td>
+                            <td class="num">0.2695</td>
+                        </tr>
+                        <tr>
+                            <td><em>t</em> + 2.0 s</td>
+                            <td class="num">0.3502</td>
+                        </tr>
+                        <tr>
+                            <td><em>t</em> + 3.0 s</td>
+                            <td class="num">0.5144</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 3: Top-10 Single Feature Removal                           -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 3</span>
+            <h2>Top-10 single-feature removal experiments</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center">Rank</th>
+                            <th>Removed Feature</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td class="center">—</td>
+                            <td>Baseline (all 20 features)</td>
+                            <td class="num">78.37%</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td class="center">1</td>
+                            <td><code>position_y</code></td>
+                            <td class="num better">+1.44 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">2</td>
+                            <td><code>orientation_z</code></td>
+                            <td class="num worse">−3.77 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">3</td>
+                            <td><code>orientation_y</code></td>
+                            <td class="num worse">−2.71 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">4</td>
+                            <td><code>wind_angle</code></td>
+                            <td class="num worse">−3.15 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">5</td>
+                            <td><code>velocity_z</code></td>
+                            <td class="num better">+0.21 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">6</td>
+                            <td><code>wind_speed</code></td>
+                            <td class="num worse">−1.00 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">7</td>
+                            <td><code>orientation_x</code></td>
+                            <td class="num worse">−4.17 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td class="center">8</td>
+                            <td><code>linear_acceleration_y</code></td>
+                            <td class="num worse">−3.69 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td class="center">9</td>
+                            <td><code>orientation_w</code></td>
+                            <td class="num worse">−4.95 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td class="center">10</td>
+                            <td><code>angular_z</code></td>
+                            <td class="num worse">−1.83 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 4: Top-10 Double Feature Removal                           -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 4</span>
+            <h2>Top-10 two-feature removal experiments</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center">Rank</th>
+                            <th>Removed Features</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td class="center">—</td>
+                            <td>Baseline (all 20 features)</td>
+                            <td class="num">78.37%</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td class="center">1</td>
+                            <td><code>orientation_z, orientation_y</code></td>
+                            <td class="num worse">−3.41 %</td>
+                            <td class="num better">−0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">2</td>
+                            <td><code>wind_angle, wind_speed</code></td>
+                            <td class="num worse">−0.66 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">3</td>
+                            <td><code>velocity_z, linear_acceleration_y</code></td>
+                            <td class="num worse">−0.22 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="center">4</td>
+                            <td><code>wind_speed, angular_z</code></td>
+                            <td class="num worse">−0.16 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="center">5</td>
+                            <td><code>orientation_x, angular_z</code></td>
+                            <td class="num worse">−2.88 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">6</td>
+                            <td><code>orientation_x, linear_acceleration_y</code></td>
+                            <td class="num worse">−0.43 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">7</td>
+                            <td><code>orientation_y, wind_angle</code></td>
+                            <td class="num better">+0.38 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">8</td>
+                            <td><code>wind_angle, linear_acceleration_y</code></td>
+                            <td class="num better">+1.13 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">9</td>
+                            <td><code>wind_speed, linear_acceleration_y</code></td>
+                            <td class="num worse">−1.35 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">10</td>
+                            <td><code>wind_speed, orientation_x</code></td>
+                            <td class="num worse">−3.29 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 5: Top-10 Triple Feature Removal                           -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 5</span>
+            <h2>Top-10 three-feature removal experiments</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center">Rank</th>
+                            <th>Removed Features</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td class="center">—</td>
+                            <td>Baseline (all 20 features)</td>
+                            <td class="num">78.37%</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td class="center">1</td>
+                            <td><code>orientation_y, wind_angle, angular_z</code></td>
+                            <td class="num better">+0.61 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">2</td>
+                            <td><code>wind_angle, linear_acceleration_y, orientation_w</code></td>
+                            <td class="num better">+0.07 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">3</td>
+                            <td><code>wind_speed, angular_z, linear_acceleration_y</code></td>
+                            <td class="num better">+0.82 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="center">4</td>
+                            <td><code>velocity_z, linear_acceleration_y, orientation_x</code></td>
+                            <td class="num better">+0.17 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">5</td>
+                            <td><code>orientation_y, wind_angle, orientation_x</code></td>
+                            <td class="num worse">−0.71 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">6</td>
+                            <td><code>orientation_x, angular_z, orientation_w</code></td>
+                            <td class="num worse">−3.35 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">7</td>
+                            <td><code>orientation_x, linear_acceleration_y, wind_angle</code></td>
+                            <td class="num worse">−1.68 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">8</td>
+                            <td><code>wind_angle, wind_speed, angular_z</code></td>
+                            <td class="num worse">−4.25 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">9</td>
+                            <td><code>velocity_z, linear_acceleration_y, orientation_y</code></td>
+                            <td class="num better">+0.82 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">10</td>
+                            <td><code>wind_angle, wind_speed, orientation_w</code></td>
+                            <td class="num worse">−2.90 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 6: Top-10 Quadruple Feature Removal                        -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 6</span>
+            <h2>Top-10 four-feature removal experiments</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center">Rank</th>
+                            <th>Removed Features</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td class="center">—</td>
+                            <td>Baseline (all 20 features)</td>
+                            <td class="num">78.37%</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td class="center">1</td>
+                            <td><code>orientation_y, wind_angle, angular_z, linear_acceleration_y</code></td>
+                            <td class="num better">+0.75 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="center">2</td>
+                            <td><code>orientation_x, linear_acceleration_y, wind_angle, angular_z</code></td>
+                            <td class="num worse">−0.83 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td class="center">3</td>
+                            <td><code>velocity_z, linear_acceleration_y, orientation_x, wind_speed</code></td>
+                            <td class="num better">+1.27 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td class="center">4</td>
+                            <td><code>wind_speed, angular_z, linear_acceleration_y, orientation_z</code></td>
+                            <td class="num worse">−4.69 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">5</td>
+                            <td><code>orientation_x, angular_z, orientation_w, orientation_z</code></td>
+                            <td class="num worse">−2.73 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">6</td>
+                            <td><code>velocity_z, linear_acceleration_y, orientation_y, orientation_w</code></td>
+                            <td class="num better">+1.37 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">7</td>
+                            <td><code>velocity_z, linear_acceleration_y, orientation_x, orientation_z</code></td>
+                            <td class="num neutral">+0.03 %</td>
+                            <td class="num worse">+0.0002</td>
+                        </tr>
+                        <tr>
+                            <td class="center">8</td>
+                            <td><code>orientation_x, linear_acceleration_y, wind_angle, wind_speed</code></td>
+                            <td class="num worse">−2.77 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td class="center">9</td>
+                            <td><code>orientation_y, wind_angle, angular_z, wind_speed</code></td>
+                            <td class="num worse">−3.29 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td class="center">10</td>
+                            <td><code>orientation_y, wind_angle, orientation_x, orientation_w</code></td>
+                            <td class="num worse">−1.72 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 7: Best per Ablation Depth                                 -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 7</span>
+            <h2>Best configuration per ablation depth</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Configuration</th>
+                            <th>Removed Features</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td>Baseline (20 features)</td>
+                            <td><span class="dash">—</span></td>
+                            <td class="num">78.37%</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal (19 feat.)</td>
+                            <td><code>position_y</code></td>
+                            <td class="num better">+1.44 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal (18 feat.)</td>
+                            <td><code>orientation_z, orientation_y</code></td>
+                            <td class="num worse">−3.41 %</td>
+                            <td class="num better">−0.0002</td>
+                        </tr>
+                        <tr class="optimal-row">
+                            <td><strong>Best 3-feature removal (17 feat.)</strong><br>
+                            </td>
+                            <td><code>orientation_y, wind_angle, angular_z</code></td>
+                            <td class="num better"><strong>+0.61 %</strong></td>
+                            <td class="num better"><strong>−0.0001</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal (16 feat.)</td>
+                            <td><code>orientation_y, wind_angle, angular_z, linear_acceleration_y</code></td>
+                            <td class="num better">+0.75 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 8: Hyperparameter Grid — FH × WS                            -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 8</span>
+            <h2>Hyperparameter grid: Forecast Horizon × Window Size</h2>
+            <p class="caption">Performance of the baseline and the best 1/2/3/4-feature removal configurations across
+                all 10 valid (FH, WS) combinations where WS &gt; FH. Δ Accuracy and Δ MAE are computed relative to the
+                baseline of each (FH, WS) configuration (i.e. each block is self-referential). All values come from the
+                final model checkpoint evaluated on the test set.</p>
+
+            <style>
+                .hp-group td {
+                    border-top: 2px solid var(--border);
+                }
+
+                .hp-sub {
+                    font-size: 1.05em;
+                    margin: 28px 0 10px 0;
+                    color: var(--text);
+                    font-weight: 600;
+                    border-bottom: 1px solid var(--border);
+                    padding-bottom: 6px;
+                }
+
+                .hp-sub:first-of-type {
+                    margin-top: 8px;
+                }
+
+                td.tbd {
+                    color: var(--text-dim);
+                    font-style: italic;
+                    opacity: 0.55;
+                }
+
+                tr.tbd-row td:first-child {
+                    color: var(--text-dim);
+                }
+            </style>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Configuration</th>
+                            <th class="center">FH</th>
+                            <th class="center">WS</th>
+                            <th class="num">Δ Accuracy</th>
+                            <th class="num">Δ MAE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- FH = 30, WS = 60 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">30</td>
+                            <td class="center">60</td>
+                            <td class="num">79.02 %</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">60</td>
+                            <td class="num better">+0.71 %</td>
+                            <td class="num worse">+0.0038</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">60</td>
+                            <td class="num worse">−3.27 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">60</td>
+                            <td class="num worse">−0.13 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">60</td>
+                            <td class="num better">+1.09 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+
+                        <!-- FH = 30, WS = 90 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">30</td>
+                            <td class="center">90</td>
+                            <td class="num">78.37 %</td>
+                            <td class="num">0.0036</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">90</td>
+                            <td class="num better">+1.44 %</td>
+                            <td class="num worse">+0.0034</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">90</td>
+                            <td class="num worse">−3.41 %</td>
+                            <td class="num better">−0.0002</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">90</td>
+                            <td class="num better">+0.61 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">90</td>
+                            <td class="num better">+0.75 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+
+                        <!-- FH = 30, WS = 120 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">30</td>
+                            <td class="center">120</td>
+                            <td class="num">79.00 %</td>
+                            <td class="num">0.0037</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">120</td>
+                            <td class="num better">+1.17 %</td>
+                            <td class="num worse">+0.0028</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">120</td>
+                            <td class="num worse">−2.38 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">120</td>
+                            <td class="num worse">−2.13 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">120</td>
+                            <td class="num worse">−0.22 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+
+                        <!-- FH = 30, WS = 150 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">30</td>
+                            <td class="center">150</td>
+                            <td class="num">74.34 %</td>
+                            <td class="num">0.0043</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">150</td>
+                            <td class="num better">+5.92 %</td>
+                            <td class="num worse">+0.0012</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">150</td>
+                            <td class="num better">+2.64 %</td>
+                            <td class="num better">−0.0006</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">150</td>
+                            <td class="num better">+2.19 %</td>
+                            <td class="num better">−0.0006</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">30</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−1.98 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+
+                        <!-- FH = 60, WS = 90 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">60</td>
+                            <td class="center">90</td>
+                            <td class="num">76.20 %</td>
+                            <td class="num">0.0054</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">90</td>
+                            <td class="num worse">−0.40 %</td>
+                            <td class="num worse">+0.0025</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">90</td>
+                            <td class="num worse">−4.55 %</td>
+                            <td class="num worse">+0.0006</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">90</td>
+                            <td class="num worse">−3.23 %</td>
+                            <td class="num worse">+0.0003</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">90</td>
+                            <td class="num worse">−5.49 %</td>
+                            <td class="num worse">+0.0009</td>
+                        </tr>
+
+                        <!-- FH = 60, WS = 120 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">60</td>
+                            <td class="center">120</td>
+                            <td class="num">72.17 %</td>
+                            <td class="num">0.0057</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">120</td>
+                            <td class="num better">+6.14 %</td>
+                            <td class="num worse">+0.0018</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">120</td>
+                            <td class="num better">+2.75 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">120</td>
+                            <td class="num better">+1.52 %</td>
+                            <td class="num worse">+0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">120</td>
+                            <td class="num better">+2.72 %</td>
+                            <td class="num neutral">+0.0000</td>
+                        </tr>
+
+                        <!-- FH = 60, WS = 150 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">60</td>
+                            <td class="center">150</td>
+                            <td class="num">75.71 %</td>
+                            <td class="num">0.0053</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">150</td>
+                            <td class="num better">+0.80 %</td>
+                            <td class="num worse">+0.0018</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−6.25 %</td>
+                            <td class="num worse">+0.0013</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">150</td>
+                            <td class="num better">+0.76 %</td>
+                            <td class="num worse">+0.0004</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">60</td>
+                            <td class="center">150</td>
+                            <td class="num better">+1.72 %</td>
+                            <td class="num worse">+0.0004</td>
+                        </tr>
+
+                        <!-- FH = 90, WS = 120 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">90</td>
+                            <td class="center">120</td>
+                            <td class="num">74.68 %</td>
+                            <td class="num">0.0069</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">120</td>
+                            <td class="num worse">−0.82 %</td>
+                            <td class="num worse">+0.0030</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">120</td>
+                            <td class="num better">+1.15 %</td>
+                            <td class="num worse">+0.0004</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">120</td>
+                            <td class="num worse">−2.08 %</td>
+                            <td class="num worse">+0.0010</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">120</td>
+                            <td class="num better">+0.96 %</td>
+                            <td class="num worse">+0.0007</td>
+                        </tr>
+
+                        <!-- FH = 90, WS = 150 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">90</td>
+                            <td class="center">150</td>
+                            <td class="num">74.81 %</td>
+                            <td class="num">0.0075</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−2.18 %</td>
+                            <td class="num worse">+0.0014</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">150</td>
+                            <td class="num better">+1.46 %</td>
+                            <td class="num better">−0.0009</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−3.45 %</td>
+                            <td class="num better">−0.0001</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">90</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−6.43 %</td>
+                            <td class="num worse">+0.0020</td>
+                        </tr>
+
+                        <!-- FH = 120, WS = 150 -->
+                        <tr class="baseline-row hp-group">
+                            <td>Baseline</td>
+                            <td class="center">120</td>
+                            <td class="center">150</td>
+                            <td class="num">75.12 %</td>
+                            <td class="num">0.0080</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal</td>
+                            <td class="center">120</td>
+                            <td class="center">150</td>
+                            <td class="num better">+1.45 %</td>
+                            <td class="num worse">+0.0005</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal</td>
+                            <td class="center">120</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−3.56 %</td>
+                            <td class="num worse">+0.0017</td>
+                        </tr>
+                        <tr>
+                            <td>Best 3-feature removal</td>
+                            <td class="center">120</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−2.83 %</td>
+                            <td class="num worse">+0.0006</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal</td>
+                            <td class="center">120</td>
+                            <td class="center">150</td>
+                            <td class="num worse">−3.27 %</td>
+                            <td class="num worse">+0.0013</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 9: Timestamp-level prediction errors                        -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 9</span>
+            <h2>Timestamp-level prediction error comparison</h2>
+            <p class="caption">Average Euclidean distance error (m) at each prediction timestamp (1-second intervals, 10
+                Hz × 10 timesteps = 1 s) for the baseline and the best 1/2/3/4-feature removal configurations, across
+                all 10 valid (FH, WS) combinations. Rows are present for every whole-second horizon up to FH/10 s. The
+                lowest error in each row is highlighted in green.
+            </p>
+
+
+            <h3 class="hp-sub">FH = 30, WS = 60</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.2898</td>
+                            <td class="num">0.3308</td>
+                            <td class="num">0.3004</td>
+                            <td class="num">0.2690</td>
+                            <td class="num better">0.2364</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.3277</td>
+                            <td class="num">0.3839</td>
+                            <td class="num">0.3245</td>
+                            <td class="num">0.3245</td>
+                            <td class="num better">0.2826</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num better">0.3743</td>
+                            <td class="num">0.3998</td>
+                            <td class="num">0.4459</td>
+                            <td class="num">0.4097</td>
+                            <td class="num">0.3972</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 30, WS = 90</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.2695</td>
+                            <td class="num">0.3123</td>
+                            <td class="num">0.2476</td>
+                            <td class="num better">0.2256</td>
+                            <td class="num">0.2611</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.3502</td>
+                            <td class="num">0.3788</td>
+                            <td class="num">0.3015</td>
+                            <td class="num better">0.2672</td>
+                            <td class="num">0.2881</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.5144</td>
+                            <td class="num">0.4385</td>
+                            <td class="num">0.3883</td>
+                            <td class="num better">0.3687</td>
+                            <td class="num">0.3816</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 30, WS = 120</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num better">0.2588</td>
+                            <td class="num">0.2811</td>
+                            <td class="num">0.3422</td>
+                            <td class="num">0.2889</td>
+                            <td class="num">0.2850</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num better">0.2772</td>
+                            <td class="num">0.3514</td>
+                            <td class="num">0.3739</td>
+                            <td class="num">0.3047</td>
+                            <td class="num">0.2814</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.3963</td>
+                            <td class="num better">0.3933</td>
+                            <td class="num">0.4389</td>
+                            <td class="num">0.4010</td>
+                            <td class="num">0.4017</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 30, WS = 150</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.3767</td>
+                            <td class="num better">0.2153</td>
+                            <td class="num">0.2972</td>
+                            <td class="num">0.2766</td>
+                            <td class="num">0.3066</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.4002</td>
+                            <td class="num better">0.2813</td>
+                            <td class="num">0.3331</td>
+                            <td class="num">0.3456</td>
+                            <td class="num">0.4039</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.4853</td>
+                            <td class="num better">0.3723</td>
+                            <td class="num">0.3993</td>
+                            <td class="num">0.4188</td>
+                            <td class="num">0.4434</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 60, WS = 90</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.3633</td>
+                            <td class="num better">0.3417</td>
+                            <td class="num">0.4031</td>
+                            <td class="num">0.3693</td>
+                            <td class="num">0.3882</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.4061</td>
+                            <td class="num">0.3933</td>
+                            <td class="num">0.4154</td>
+                            <td class="num better">0.3856</td>
+                            <td class="num">0.4215</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num better">0.4276</td>
+                            <td class="num">0.4410</td>
+                            <td class="num">0.4526</td>
+                            <td class="num">0.4448</td>
+                            <td class="num">0.4776</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num better">0.5125</td>
+                            <td class="num">0.5157</td>
+                            <td class="num">0.5461</td>
+                            <td class="num">0.5419</td>
+                            <td class="num">0.5533</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.6157</td>
+                            <td class="num better">0.5845</td>
+                            <td class="num">0.6337</td>
+                            <td class="num">0.6674</td>
+                            <td class="num">0.6499</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num">0.7932</td>
+                            <td class="num better">0.6820</td>
+                            <td class="num">0.7794</td>
+                            <td class="num">0.7008</td>
+                            <td class="num">0.7994</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 60, WS = 120</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.3748</td>
+                            <td class="num better">0.3551</td>
+                            <td class="num">0.3819</td>
+                            <td class="num">0.3695</td>
+                            <td class="num">0.3598</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.4057</td>
+                            <td class="num better">0.3447</td>
+                            <td class="num">0.3915</td>
+                            <td class="num">0.3771</td>
+                            <td class="num">0.3529</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.4570</td>
+                            <td class="num">0.4128</td>
+                            <td class="num">0.4628</td>
+                            <td class="num">0.4353</td>
+                            <td class="num better">0.3876</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num">0.5157</td>
+                            <td class="num better">0.4709</td>
+                            <td class="num">0.5302</td>
+                            <td class="num">0.4758</td>
+                            <td class="num">0.4824</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.6237</td>
+                            <td class="num better">0.5183</td>
+                            <td class="num">0.6500</td>
+                            <td class="num">0.5803</td>
+                            <td class="num">0.5718</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num">0.7660</td>
+                            <td class="num better">0.6660</td>
+                            <td class="num">0.7366</td>
+                            <td class="num">0.6895</td>
+                            <td class="num">0.6734</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 60, WS = 150</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num better">0.3326</td>
+                            <td class="num">0.3491</td>
+                            <td class="num">0.5085</td>
+                            <td class="num">0.3801</td>
+                            <td class="num">0.3646</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num better">0.3748</td>
+                            <td class="num">0.4321</td>
+                            <td class="num">0.4921</td>
+                            <td class="num">0.3900</td>
+                            <td class="num">0.3792</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.4423</td>
+                            <td class="num">0.4714</td>
+                            <td class="num">0.5237</td>
+                            <td class="num">0.4953</td>
+                            <td class="num better">0.3901</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num">0.5253</td>
+                            <td class="num">0.5292</td>
+                            <td class="num">0.5995</td>
+                            <td class="num">0.5347</td>
+                            <td class="num better">0.4911</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.5753</td>
+                            <td class="num">0.6102</td>
+                            <td class="num">0.7178</td>
+                            <td class="num">0.5933</td>
+                            <td class="num better">0.5661</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num">0.6770</td>
+                            <td class="num">0.7482</td>
+                            <td class="num">0.8280</td>
+                            <td class="num">0.7634</td>
+                            <td class="num better">0.6474</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 90, WS = 120</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.3524</td>
+                            <td class="num">0.4261</td>
+                            <td class="num better">0.3349</td>
+                            <td class="num">0.4485</td>
+                            <td class="num">0.3993</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num better">0.3541</td>
+                            <td class="num">0.4552</td>
+                            <td class="num">0.3655</td>
+                            <td class="num">0.4380</td>
+                            <td class="num">0.3807</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num better">0.3845</td>
+                            <td class="num">0.4694</td>
+                            <td class="num">0.3857</td>
+                            <td class="num">0.4496</td>
+                            <td class="num">0.4490</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num">0.4497</td>
+                            <td class="num">0.5547</td>
+                            <td class="num better">0.4468</td>
+                            <td class="num">0.5254</td>
+                            <td class="num">0.4727</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.5462</td>
+                            <td class="num">0.6066</td>
+                            <td class="num">0.5579</td>
+                            <td class="num">0.6113</td>
+                            <td class="num better">0.5418</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num">0.5864</td>
+                            <td class="num">0.6631</td>
+                            <td class="num">0.6402</td>
+                            <td class="num">0.6741</td>
+                            <td class="num better">0.5839</td>
+                        </tr>
+                        <tr>
+                            <td>t+7.0 s</td>
+                            <td class="num better">0.6480</td>
+                            <td class="num">0.7629</td>
+                            <td class="num">0.7006</td>
+                            <td class="num">0.7458</td>
+                            <td class="num">0.6736</td>
+                        </tr>
+                        <tr>
+                            <td>t+8.0 s</td>
+                            <td class="num">0.7394</td>
+                            <td class="num">0.7538</td>
+                            <td class="num">0.7610</td>
+                            <td class="num">0.8028</td>
+                            <td class="num better">0.7263</td>
+                        </tr>
+                        <tr>
+                            <td>t+9.0 s</td>
+                            <td class="num better">0.8248</td>
+                            <td class="num">0.9426</td>
+                            <td class="num">0.8851</td>
+                            <td class="num">0.9084</td>
+                            <td class="num">0.8857</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 90, WS = 150</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num">0.3597</td>
+                            <td class="num">0.4264</td>
+                            <td class="num better">0.3428</td>
+                            <td class="num">0.4711</td>
+                            <td class="num">0.5234</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num">0.3846</td>
+                            <td class="num">0.4355</td>
+                            <td class="num better">0.3462</td>
+                            <td class="num">0.4377</td>
+                            <td class="num">0.6076</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num">0.4299</td>
+                            <td class="num">0.4880</td>
+                            <td class="num better">0.3920</td>
+                            <td class="num">0.4679</td>
+                            <td class="num">0.5379</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num">0.5026</td>
+                            <td class="num">0.5760</td>
+                            <td class="num better">0.4455</td>
+                            <td class="num">0.5555</td>
+                            <td class="num">0.6681</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.5535</td>
+                            <td class="num">0.6427</td>
+                            <td class="num better">0.5209</td>
+                            <td class="num">0.6687</td>
+                            <td class="num">0.7906</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num">0.6465</td>
+                            <td class="num">0.6993</td>
+                            <td class="num better">0.5539</td>
+                            <td class="num">0.7294</td>
+                            <td class="num">0.9246</td>
+                        </tr>
+                        <tr>
+                            <td>t+7.0 s</td>
+                            <td class="num">0.7112</td>
+                            <td class="num">0.7971</td>
+                            <td class="num better">0.6432</td>
+                            <td class="num">0.7635</td>
+                            <td class="num">1.0128</td>
+                        </tr>
+                        <tr>
+                            <td>t+8.0 s</td>
+                            <td class="num">0.7529</td>
+                            <td class="num">0.9197</td>
+                            <td class="num better">0.7019</td>
+                            <td class="num">0.8545</td>
+                            <td class="num">1.1381</td>
+                        </tr>
+                        <tr>
+                            <td>t+9.0 s</td>
+                            <td class="num">0.8723</td>
+                            <td class="num">1.0603</td>
+                            <td class="num better">0.8192</td>
+                            <td class="num">0.9942</td>
+                            <td class="num">1.2555</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="hp-sub">FH = 120, WS = 150</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Prediction Time (s)</th>
+                            <th class="num">Baseline (m)</th>
+                            <th class="num">Best 1-Feat Removal (m)</th>
+                            <th class="num">Best 2-Feat Removal (m)</th>
+                            <th class="num">Best 3-Feat Removal (m)</th>
+                            <th class="num">Best 4-Feat Removal (m)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>t+1.0 s</td>
+                            <td class="num better">0.3621</td>
+                            <td class="num">0.4000</td>
+                            <td class="num">0.4309</td>
+                            <td class="num">0.4307</td>
+                            <td class="num">0.4014</td>
+                        </tr>
+                        <tr>
+                            <td>t+2.0 s</td>
+                            <td class="num better">0.3935</td>
+                            <td class="num">0.4285</td>
+                            <td class="num">0.4497</td>
+                            <td class="num">0.4312</td>
+                            <td class="num">0.4229</td>
+                        </tr>
+                        <tr>
+                            <td>t+3.0 s</td>
+                            <td class="num better">0.4529</td>
+                            <td class="num">0.4664</td>
+                            <td class="num">0.4814</td>
+                            <td class="num">0.4887</td>
+                            <td class="num">0.4786</td>
+                        </tr>
+                        <tr>
+                            <td>t+4.0 s</td>
+                            <td class="num">0.5075</td>
+                            <td class="num better">0.4841</td>
+                            <td class="num">0.5406</td>
+                            <td class="num">0.5510</td>
+                            <td class="num">0.5605</td>
+                        </tr>
+                        <tr>
+                            <td>t+5.0 s</td>
+                            <td class="num">0.5854</td>
+                            <td class="num better">0.5654</td>
+                            <td class="num">0.6208</td>
+                            <td class="num">0.5910</td>
+                            <td class="num">0.5927</td>
+                        </tr>
+                        <tr>
+                            <td>t+6.0 s</td>
+                            <td class="num better">0.6353</td>
+                            <td class="num">0.6439</td>
+                            <td class="num">0.6906</td>
+                            <td class="num">0.6580</td>
+                            <td class="num">0.6459</td>
+                        </tr>
+                        <tr>
+                            <td>t+7.0 s</td>
+                            <td class="num">0.7180</td>
+                            <td class="num better">0.6850</td>
+                            <td class="num">0.7743</td>
+                            <td class="num">0.7378</td>
+                            <td class="num">0.7228</td>
+                        </tr>
+                        <tr>
+                            <td>t+8.0 s</td>
+                            <td class="num">0.7512</td>
+                            <td class="num better">0.7093</td>
+                            <td class="num">0.8473</td>
+                            <td class="num">0.7540</td>
+                            <td class="num">0.7505</td>
+                        </tr>
+                        <tr>
+                            <td>t+9.0 s</td>
+                            <td class="num">0.7958</td>
+                            <td class="num better">0.7412</td>
+                            <td class="num">0.8829</td>
+                            <td class="num">0.8442</td>
+                            <td class="num">0.8419</td>
+                        </tr>
+                        <tr>
+                            <td>t+10.0 s</td>
+                            <td class="num">0.8533</td>
+                            <td class="num better">0.8078</td>
+                            <td class="num">0.9269</td>
+                            <td class="num">0.8736</td>
+                            <td class="num">0.8928</td>
+                        </tr>
+                        <tr>
+                            <td>t+11.0 s</td>
+                            <td class="num">0.9318</td>
+                            <td class="num better">0.8723</td>
+                            <td class="num">0.9995</td>
+                            <td class="num">0.9496</td>
+                            <td class="num">0.9590</td>
+                        </tr>
+                        <tr>
+                            <td>t+12.0 s</td>
+                            <td class="num">1.0515</td>
+                            <td class="num better">0.9800</td>
+                            <td class="num">1.0818</td>
+                            <td class="num">1.0907</td>
+                            <td class="num">1.1194</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- FIGURE 1: CDF plots                                               -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Figure 1</span>
+            <h2>CDF of Euclidean prediction error</h2>
+            <p class="caption">Empirical cumulative distribution function (CDF) of the per-timestep Euclidean error
+                (m) for the baseline and the best 1/2/3/4-feature removal configurations, across all 10 valid
+                (FH, WS) combinations.</p>
+            <div class="figure-grid">
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH30_WS60.png" alt="CDF FH=30 WS=60">
+                    <figcaption>FH = 30, WS = 60</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH30_WS90.png" alt="CDF FH=30 WS=90">
+                    <figcaption>FH = 30, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH30_WS120.png" alt="CDF FH=30 WS=120">
+                    <figcaption>FH = 30, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH30_WS150.png" alt="CDF FH=30 WS=150">
+                    <figcaption>FH = 30, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH60_WS90.png" alt="CDF FH=60 WS=90">
+                    <figcaption>FH = 60, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH60_WS120.png" alt="CDF FH=60 WS=120">
+                    <figcaption>FH = 60, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH60_WS150.png" alt="CDF FH=60 WS=150">
+                    <figcaption>FH = 60, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH90_WS120.png" alt="CDF FH=90 WS=120">
+                    <figcaption>FH = 90, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH90_WS150.png" alt="CDF FH=90 WS=150">
+                    <figcaption>FH = 90, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/CDF_Plots/CDF_FH120_WS150.png" alt="CDF FH=120 WS=150">
+                    <figcaption>FH = 120, WS = 150</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- FIGURE 2: MAE plots                                               -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Figure 2</span>
+            <h2>Per-timestep MAE</h2>
+            <p class="caption">Mean Absolute Error (m) at each prediction timestep for the baseline and the best
+                1/2/3/4-feature removal configurations, across all 10 valid (FH, WS) combinations.</p>
+            <div class="figure-grid">
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH30_WS60.png" alt="MAE FH=30 WS=60">
+                    <figcaption>FH = 30, WS = 60</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH30_WS90.png" alt="MAE FH=30 WS=90">
+                    <figcaption>FH = 30, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH30_WS120.png" alt="MAE FH=30 WS=120">
+                    <figcaption>FH = 30, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH30_WS150.png" alt="MAE FH=30 WS=150">
+                    <figcaption>FH = 30, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH60_WS90.png" alt="MAE FH=60 WS=90">
+                    <figcaption>FH = 60, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH60_WS120.png" alt="MAE FH=60 WS=120">
+                    <figcaption>FH = 60, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH60_WS150.png" alt="MAE FH=60 WS=150">
+                    <figcaption>FH = 60, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH90_WS120.png" alt="MAE FH=90 WS=120">
+                    <figcaption>FH = 90, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH90_WS150.png" alt="MAE FH=90 WS=150">
+                    <figcaption>FH = 90, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/MAE_Plots/MAE_FH120_WS150.png" alt="MAE FH=120 WS=150">
+                    <figcaption>FH = 120, WS = 150</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- FIGURE 3: 3D Trajectory plots                                     -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Figure 3</span>
+            <h2>3D trajectory predictions</h2>
+            <p class="caption">3D predicted vs. ground-truth trajectories for the baseline and the best
+                1/2/3/4-feature removal configurations, across all 10 valid (FH, WS) combinations.</p>
+            <div class="figure-grid">
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH30_WS60.png" alt="3D Trajectory FH=30 WS=60">
+                    <figcaption>FH = 30, WS = 60</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH30_WS90.png" alt="3D Trajectory FH=30 WS=90">
+                    <figcaption>FH = 30, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH30_WS120.png" alt="3D Trajectory FH=30 WS=120">
+                    <figcaption>FH = 30, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH30_WS150.png" alt="3D Trajectory FH=30 WS=150">
+                    <figcaption>FH = 30, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH60_WS90.png" alt="3D Trajectory FH=60 WS=90">
+                    <figcaption>FH = 60, WS = 90</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH60_WS120.png" alt="3D Trajectory FH=60 WS=120">
+                    <figcaption>FH = 60, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH60_WS150.png" alt="3D Trajectory FH=60 WS=150">
+                    <figcaption>FH = 60, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH90_WS120.png" alt="3D Trajectory FH=90 WS=120">
+                    <figcaption>FH = 90, WS = 120</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH90_WS150.png" alt="3D Trajectory FH=90 WS=150">
+                    <figcaption>FH = 90, WS = 150</figcaption>
+                </figure>
+                <figure class="figure">
+                    <img src="Plots/3D_Trajectory_Plots/3D_Trajectory_FH120_WS150.png"
+                        alt="3D Trajectory FH=120 WS=150">
+                    <figcaption>FH = 120, WS = 150</figcaption>
+                </figure>
+            </div>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- TABLE 10: Classification metrics @ FH=30, WS=90                   -->
+        <!-- =============================================================== -->
+        <div class="section">
+            <span class="section-label">Table 10</span>
+            <h2>Classification metrics for the recommended configuration</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th class="num">Precision</th>
+                            <th class="num">Recall</th>
+                            <th class="num">F1-score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="baseline-row">
+                            <td>Baseline (20 features)</td>
+                            <td class="num">0.7537</td>
+                            <td class="num">0.7258</td>
+                            <td class="num">0.7327</td>
+                        </tr>
+                        <tr>
+                            <td>Best 1-feature removal (19 feat.)</td>
+                            <td class="num">0.7530</td>
+                            <td class="num">0.7366</td>
+                            <td class="num">0.7320</td>
+                        </tr>
+                        <tr>
+                            <td>Best 2-feature removal (18 feat.)</td>
+                            <td class="num">0.7649</td>
+                            <td class="num">0.6794</td>
+                            <td class="num">0.7038</td>
+                        </tr>
+                        <tr class="optimal-row">
+                            <td><strong>Best 3-feature removal (17 feat.)</strong><br><span
+                                    style="color: var(--text-dim); font-size: 0.85em;">Recommended configuration</span>
+                            </td>
+                            <td class="num">0.7737</td>
+                            <td class="num">0.7299</td>
+                            <td class="num better">0.7383</td>
+                        </tr>
+                        <tr>
+                            <td>Best 4-feature removal (16 feat.)</td>
+                            <td class="num better">0.7793</td>
+                            <td class="num">0.7132</td>
+                            <td class="num">0.7242</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

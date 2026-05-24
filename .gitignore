@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# Model checkpoints
+*.pt
+*.pth
+*.onnx
+
+# Results folders (too large for GitHub)
+Baseline/
+FH_WS/
+Remove_Tests/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+Weather_Dataset_final.csv
